@@ -12,6 +12,7 @@ import android.location.LocationManager
 import android.location.provider.ProviderProperties
 import android.os.Build
 import android.os.Build.VERSION_CODES.P
+import android.os.Build.VERSION_CODES.S
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.mutableStateOf
 
@@ -22,7 +23,8 @@ class GpsManager {
     val allProviders = mutableStateOf(listOf<String>())
     val enabledProviders = mutableStateOf(listOf<String>())
     val gnssSignalType = mutableStateOf(listOf<GnssSignalType>())
-    val gnssAntennaInfo = mutableStateOf(listOf<GnssAntennaInfo?>(null))
+    var gnssAntennaInfo: MutableList<GnssAntennaInfo>? = null
+
     val gnssCapabilities = mutableStateOf<GnssCapabilities?>(null)
     val gpsProviderProperties = mutableStateOf<ProviderProperties?>(null)
 
@@ -57,6 +59,7 @@ class GpsManager {
         gnssSignalType.value = initialGpsStatus.gnssSignalTypes
         gnssCapabilities.value = initialGpsStatus.gnssCapabilities
         gpsProviderProperties.value = initialGpsStatus.gpsProviderProperties
+        gnssAntennaInfo = initialGpsStatus.gnssAntennaInfos
     }
 
     fun unregister(context: Context) {
@@ -79,8 +82,8 @@ private class InitialGpsStatus(context: Context) {
 
     val enabledProvider = locationManager.getProviders(true)
 
-//    @RequiresApi(S)
-//    val gnssAntennaInfos = locationManager.gnssAntennaInfos //TODO
+    @RequiresApi(S)
+    val gnssAntennaInfos = locationManager.gnssAntennaInfos //TODO
 
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     val gnssSignalTypes = locationManager.gnssCapabilities.gnssSignalTypes

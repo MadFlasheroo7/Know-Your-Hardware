@@ -24,7 +24,7 @@ fun HomeScreen(
         CenterAlignedTopAppBar(
             title = {
                 Text(
-                    text = "Broadcast Receiver in Compose",
+                    text = "Know Your Hardware",
                     textAlign = TextAlign.Center,
                     fontWeight = FontWeight.Bold
                 )

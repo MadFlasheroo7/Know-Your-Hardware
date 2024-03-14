@@ -1,6 +1,7 @@
 package pro.jayeshseth.knowyourhardware.ui.screens
 
 import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -43,6 +44,7 @@ import pro.jayeshseth.knowyourhardware.ui.additionalInfos.SingleShotFixInfo
 import pro.jayeshseth.knowyourhardware.ui.composables.InfoCard
 import pro.jayeshseth.knowyourhardware.ui.composables.TitleText
 
+@RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun GpsInfoScreen(gpsManager: GpsManager, modifier: Modifier = Modifier) {
     Column(
@@ -70,6 +72,10 @@ fun GpsInfoScreen(gpsManager: GpsManager, modifier: Modifier = Modifier) {
             title = "Enabled Provider",
             info = "${gpsManager.enabledProviders.value}"
         )
+        InfoCard(
+            title = "Provider Properties",
+            info = "${gpsManager.gpsProviderProperties.value}"
+        )
         TitleText(text = "GNSS")
         InfoCard(
             title = "Gnss Hardware",
@@ -77,7 +83,7 @@ fun GpsInfoScreen(gpsManager: GpsManager, modifier: Modifier = Modifier) {
         )
         InfoCard(
             title = "Gnss Antenna",
-            info = "${gpsManager.gnssAntennaInfo.value}"
+            info = "${gpsManager.gnssAntennaInfo}"
         )
         InfoCard(
             title = "Gnss Signal Types",
