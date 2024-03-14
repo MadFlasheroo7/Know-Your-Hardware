@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "pro.jayeshseth.broadcastreceivers"
+    namespace = "pro.jayeshseth.knowyourhardware"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "pro.jayeshseth.broadcastreceivers"
+        applicationId = "pro.jayeshseth.knowyourhardware"
         minSdk = 24
         targetSdk = 34
         versionCode = 1

@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Broadcast Receivers"
+rootProject.name = "Know Your Hardware"
 include(":app")
  
