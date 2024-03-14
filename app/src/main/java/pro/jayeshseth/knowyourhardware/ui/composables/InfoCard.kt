@@ -37,9 +37,7 @@ fun InfoCard(
     enabled: Boolean = false,
     additionalInfoContent: @Composable (ColumnScope.() -> Unit) = {}
 ) {
-    val isVisible = remember {
-        mutableStateOf(false)
-    }
+    val isVisible = remember { mutableStateOf(false) }
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))

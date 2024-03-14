@@ -70,7 +70,7 @@ fun GpsInfoScreen(gpsManager: GpsManager, modifier: Modifier = Modifier) {
             title = "Enabled Provider",
             info = "${gpsManager.enabledProviders.value}"
         )
-        TitleText(text = "GNSS", onInfoClick = {})
+        TitleText(text = "GNSS")
         InfoCard(
             title = "Gnss Hardware",
             info = "${gpsManager.gnssHardwareModelName.value}"
