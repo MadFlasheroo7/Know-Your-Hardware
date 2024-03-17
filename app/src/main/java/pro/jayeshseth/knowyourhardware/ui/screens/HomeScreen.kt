@@ -38,7 +38,7 @@ fun HomeScreen(
                 .verticalScroll(rememberScrollState())
                 .navigationBarsPadding()
         ) {
-            InteractiveButton(text = "Location", onClick = navToGpsScreen)
+            InteractiveButton(text = "GPS", onClick = navToGpsScreen)
         }
     }
 }

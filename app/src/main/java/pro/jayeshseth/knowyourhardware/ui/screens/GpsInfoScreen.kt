@@ -1,7 +1,6 @@
 package pro.jayeshseth.knowyourhardware.ui.screens
 
 import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,34 +16,33 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import pro.jayeshseth.knowyourhardware.broadcastReceivers.GpsManager
-import pro.jayeshseth.knowyourhardware.ui.additionalInfos.AntennaInfo
-import pro.jayeshseth.knowyourhardware.ui.additionalInfos.GeofencingInfo
-import pro.jayeshseth.knowyourhardware.ui.additionalInfos.LowPowerModeInfo
-import pro.jayeshseth.knowyourhardware.ui.additionalInfos.MeasurementCorrectionExcessPathLengthInfo
-import pro.jayeshseth.knowyourhardware.ui.additionalInfos.MeasurementCorrectionInfo
-import pro.jayeshseth.knowyourhardware.ui.additionalInfos.MeasurementCorrectionsForDrivingInfo
-import pro.jayeshseth.knowyourhardware.ui.additionalInfos.MeasurementCorrectionsLosSatsInfo
-import pro.jayeshseth.knowyourhardware.ui.additionalInfos.MeasurementCorrectionsReflectingPlaneInfo
-import pro.jayeshseth.knowyourhardware.ui.additionalInfos.MeasurementCorrelationVectorsInfo
-import pro.jayeshseth.knowyourhardware.ui.additionalInfos.MeasurementsInfo
-import pro.jayeshseth.knowyourhardware.ui.additionalInfos.MsaInfo
-import pro.jayeshseth.knowyourhardware.ui.additionalInfos.MsbInfo
-import pro.jayeshseth.knowyourhardware.ui.additionalInfos.NavigationMessageInfo
-import pro.jayeshseth.knowyourhardware.ui.additionalInfos.OnDemandTimeInfo
-import pro.jayeshseth.knowyourhardware.ui.additionalInfos.PowerMultibandAcquisitionInfo
-import pro.jayeshseth.knowyourhardware.ui.additionalInfos.PowerMultibandTrackingInfo
-import pro.jayeshseth.knowyourhardware.ui.additionalInfos.PowerOtherModesInfo
-import pro.jayeshseth.knowyourhardware.ui.additionalInfos.PowerSinglebandAcquisitionInfo
-import pro.jayeshseth.knowyourhardware.ui.additionalInfos.PowerSinglebandTrackingInfo
-import pro.jayeshseth.knowyourhardware.ui.additionalInfos.PowerTotalsInfo
-import pro.jayeshseth.knowyourhardware.ui.additionalInfos.SatelliteBlocklistInfo
-import pro.jayeshseth.knowyourhardware.ui.additionalInfos.SatellitePvtInfo
-import pro.jayeshseth.knowyourhardware.ui.additionalInfos.SchedulingInfo
-import pro.jayeshseth.knowyourhardware.ui.additionalInfos.SingleShotFixInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.gpsInfo.AntennaInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.gpsInfo.GeofencingInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.gpsInfo.LowPowerModeInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.gpsInfo.MeasurementCorrectionExcessPathLengthInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.gpsInfo.MeasurementCorrectionInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.gpsInfo.MeasurementCorrectionsForDrivingInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.gpsInfo.MeasurementCorrectionsLosSatsInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.gpsInfo.MeasurementCorrectionsReflectingPlaneInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.gpsInfo.MeasurementCorrelationVectorsInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.gpsInfo.MeasurementsInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.gpsInfo.MsaInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.gpsInfo.MsbInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.gpsInfo.NavigationMessageInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.gpsInfo.OnDemandTimeInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.gpsInfo.PowerMultibandAcquisitionInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.gpsInfo.PowerMultibandTrackingInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.gpsInfo.PowerOtherModesInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.gpsInfo.PowerSinglebandAcquisitionInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.gpsInfo.PowerSinglebandTrackingInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.gpsInfo.PowerTotalsInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.gpsInfo.SatelliteBlocklistInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.gpsInfo.SatellitePvtInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.gpsInfo.SchedulingInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.gpsInfo.SingleShotFixInfo
 import pro.jayeshseth.knowyourhardware.ui.composables.InfoCard
 import pro.jayeshseth.knowyourhardware.ui.composables.TitleText
 
-@RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun GpsInfoScreen(gpsManager: GpsManager, modifier: Modifier = Modifier) {
     Column(
@@ -60,10 +58,21 @@ fun GpsInfoScreen(gpsManager: GpsManager, modifier: Modifier = Modifier) {
             title = "Gps State",
             info = if (gpsManager.isGpsEnabled.value) "Enabled" else "Disabled"
         )
-        InfoCard(
-            title = "Location",
-            info = if (gpsManager.isLocationEnabled.value) "Enabled" else "Disabled"
-        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            InfoCard(
+                title = "Location",
+                info = if (gpsManager.isLocationEnabled.value) "Enabled" else "Disabled"
+            )
+        } else {
+            Text(
+                text = "\"isLocationEnabled\" Unavailable for API below 28",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
         InfoCard(
             title = "All Providers",
             info = "${gpsManager.allProviders.value}"
@@ -72,23 +81,67 @@ fun GpsInfoScreen(gpsManager: GpsManager, modifier: Modifier = Modifier) {
             title = "Enabled Provider",
             info = "${gpsManager.enabledProviders.value}"
         )
-        InfoCard(
-            title = "Provider Properties",
-            info = "${gpsManager.gpsProviderProperties.value}"
-        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            InfoCard(
+                title = "Provider Properties",
+                info = "${gpsManager.gpsProviderProperties.value}"
+            )
+        } else {
+            Text(
+                text = "Provider Properties Unavailable for API below 31",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
         TitleText(text = "GNSS")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            InfoCard(
+                title = "Gnss Hardware",
+                info = "${gpsManager.gnssHardwareModelName.value}"
+            )
+        } else {
+            Text(
+                text = "Provider Properties Unavailable for API below 28",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
         InfoCard(
-            title = "Gnss Hardware",
-            info = "${gpsManager.gnssHardwareModelName.value}"
+            title = "Gnss Hardware Year",
+            info = "${gpsManager.gnssHardwareYear.value}"
         )
-        InfoCard(
-            title = "Gnss Antenna",
-            info = "${gpsManager.gnssAntennaInfo}"
-        )
-        InfoCard(
-            title = "Gnss Signal Types",
-            info = "${gpsManager.gnssSignalType.value}"
-        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            InfoCard(
+                title = "Gnss Antenna",
+                info = "${gpsManager.gnssAntennaInfo}"
+            )
+        } else {
+            Text(
+                text = "Antenna Info Unavailable for API below 31",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            InfoCard(
+                title = "Gnss Signal Types",
+                info = "${gpsManager.gnssCapabilities.value?.gnssSignalTypes}"
+            )
+        } else {
+            Text(
+                text = "Signal Type Information Unavailable for API below 34",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
         Text(
             text = "GNSS Capabilities",
             style = MaterialTheme.typography.titleMedium,

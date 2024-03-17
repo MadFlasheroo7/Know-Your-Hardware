@@ -2,8 +2,11 @@ package pro.jayeshseth.knowyourhardware
 
 import android.content.res.Resources
 import android.graphics.Color
+import android.location.Location
+import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Looper
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -13,9 +16,16 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import pro.jayeshseth.knowyourhardware.broadcastReceivers.GpsManager
 import pro.jayeshseth.knowyourhardware.ui.theme.BroadcastReceiversTheme
+import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
     private val gpsManager = GpsManager()
@@ -23,7 +33,21 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+//        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         gpsManager.register(this)
+//        val locationRequest = com.google.android.gms.location.LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, TimeUnit.SECONDS.toMillis(3)).build()
+//
+//        val locationCallback: LocationCallback = object : LocationCallback() {
+//            override fun onLocationResult(result: LocationResult) {
+//                Log.d("location", "$result")
+//            }
+//        }
+//        fusedLocationClient.requestLocationUpdates(
+//            locationRequest,
+//            locationCallback,
+//            Looper.getMainLooper()
+//        )
+
         val isDark = Resources.getSystem().configuration.isNightModeActive
         Log.d("test", "$isDark")
         enableEdgeToEdge(

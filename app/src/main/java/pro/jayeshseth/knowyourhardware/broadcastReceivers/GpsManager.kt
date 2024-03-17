@@ -1,13 +1,11 @@
 package pro.jayeshseth.knowyourhardware.broadcastReceivers
 
-import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.location.GnssAntennaInfo
 import android.location.GnssCapabilities
-import android.location.GnssSignalType
 import android.location.LocationManager
 import android.location.provider.ProviderProperties
 import android.os.Build
@@ -18,48 +16,62 @@ import androidx.compose.runtime.mutableStateOf
 
 class GpsManager {
     val isGpsEnabled = mutableStateOf(false)
+    @RequiresApi(P)
     val isLocationEnabled = mutableStateOf(false)
+    @RequiresApi(P)
     val gnssHardwareModelName = mutableStateOf<String?>("")
+    val gnssHardwareYear = mutableStateOf<Int?>(0)
     val allProviders = mutableStateOf(listOf<String>())
     val enabledProviders = mutableStateOf(listOf<String>())
-    val gnssSignalType = mutableStateOf(listOf<GnssSignalType>())
+    @RequiresApi(S)
     var gnssAntennaInfo: MutableList<GnssAntennaInfo>? = null
-
     val gnssCapabilities = mutableStateOf<GnssCapabilities?>(null)
+    @RequiresApi(S)
     val gpsProviderProperties = mutableStateOf<ProviderProperties?>(null)
 
     private val gpsReceiver = object : BroadcastReceiver() {
-        @SuppressLint("MissingPermission")
-        @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
         override fun onReceive(context: Context?, intent: Intent?) {
             val action = intent?.action
             if (action == LocationManager.PROVIDERS_CHANGED_ACTION) {
                 val locationManager =
                     context?.getSystemService(Context.LOCATION_SERVICE) as LocationManager
                 isGpsEnabled.value = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+                @RequiresApi(P)
                 isLocationEnabled.value = locationManager.isLocationEnabled
+                @RequiresApi(P)
                 gnssHardwareModelName.value = locationManager.gnssHardwareModelName
                 allProviders.value = locationManager.allProviders
                 enabledProviders.value = locationManager.getProviders(true)
-                gnssSignalType.value = locationManager.gnssCapabilities.gnssSignalTypes
+                @RequiresApi(Build.VERSION_CODES.R)
+                gnssCapabilities.value = locationManager.gnssCapabilities
+                @RequiresApi(S)
+                gpsProviderProperties.value =
+                    locationManager.getProviderProperties(LocationManager.GPS_PROVIDER)
+                @RequiresApi(S)
+                gnssAntennaInfo = locationManager.gnssAntennaInfos
             }
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     fun register(context: Context) {
         val filter = IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION)
         val initialGpsStatus = InitialGpsStatus(context)
         context.registerReceiver(gpsReceiver, filter)
         isGpsEnabled.value = initialGpsStatus.isGpsEnabled
+        @RequiresApi(P)
         gnssHardwareModelName.value = initialGpsStatus.gnssHardwareModel
         allProviders.value = initialGpsStatus.allProviders
+        @RequiresApi(P)
         isLocationEnabled.value = initialGpsStatus.isLocationEnabled
         enabledProviders.value = initialGpsStatus.enabledProvider
-        gnssSignalType.value = initialGpsStatus.gnssSignalTypes
+        @RequiresApi(Build.VERSION_CODES.R)
         gnssCapabilities.value = initialGpsStatus.gnssCapabilities
+        @RequiresApi(S)
         gpsProviderProperties.value = initialGpsStatus.gpsProviderProperties
+        @RequiresApi(S)
         gnssAntennaInfo = initialGpsStatus.gnssAntennaInfos
+        @RequiresApi(P)
+        gnssHardwareYear.value = initialGpsStatus.gnssHardwareYear
     }
 
     fun unregister(context: Context) {
@@ -78,15 +90,15 @@ private class InitialGpsStatus(context: Context) {
     val gnssHardwareModel = locationManager.gnssHardwareModelName
 
     @RequiresApi(P)
+    val gnssHardwareYear = locationManager.gnssYearOfHardware
+
+    @RequiresApi(P)
     val isLocationEnabled = locationManager.isLocationEnabled
 
     val enabledProvider = locationManager.getProviders(true)
 
     @RequiresApi(S)
     val gnssAntennaInfos = locationManager.gnssAntennaInfos //TODO
-
-    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-    val gnssSignalTypes = locationManager.gnssCapabilities.gnssSignalTypes
 
     @RequiresApi(Build.VERSION_CODES.R)
     val gnssCapabilities = locationManager.gnssCapabilities
