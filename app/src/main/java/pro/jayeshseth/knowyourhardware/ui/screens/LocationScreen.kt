@@ -179,7 +179,9 @@ fun LocationScreen(
     if (useFusedProvider.value) {
         fusedLocationClient.lastLocation.addOnSuccessListener { loc ->
             loc.let {
-                lastKnownLocation.value = it
+                if (it != null) {
+                    lastKnownLocation.value = it
+                }
             }
         }
     } else if (useGPSProvider.value) {
