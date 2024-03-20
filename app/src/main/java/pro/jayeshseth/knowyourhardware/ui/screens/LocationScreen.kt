@@ -1,9 +1,12 @@
 package pro.jayeshseth.knowyourhardware.ui.screens
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
+import android.location.LocationManager
 import android.os.Build
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -11,6 +14,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -37,34 +41,49 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import pro.jayeshseth.knowyourhardware.R
+import pro.jayeshseth.knowyourhardware.broadcastReceivers.GpsManager
 import pro.jayeshseth.knowyourhardware.locationListeners.FusedLocationUpdatesListener
 import pro.jayeshseth.knowyourhardware.locationListeners.GpsLocationUpdatesListener
+import pro.jayeshseth.knowyourhardware.locationListeners.NetworkLocationUpdatesListener
+import pro.jayeshseth.knowyourhardware.locationListeners.PassiveLocationUpdatesListener
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.locationInfo.AltitudeInfo
 import pro.jayeshseth.knowyourhardware.ui.additionalInfos.locationInfo.BearingAccuracyInfo
 import pro.jayeshseth.knowyourhardware.ui.additionalInfos.locationInfo.BearingInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.locationInfo.CurrentLocationProviderInfo
 import pro.jayeshseth.knowyourhardware.ui.additionalInfos.locationInfo.ElapsedRealtimeAgeMillisInfo
 import pro.jayeshseth.knowyourhardware.ui.additionalInfos.locationInfo.ElapsedRealtimeMillisInfo
 import pro.jayeshseth.knowyourhardware.ui.additionalInfos.locationInfo.ElapsedRealtimeNanosInfo
 import pro.jayeshseth.knowyourhardware.ui.additionalInfos.locationInfo.ElapsedRealtimeUncertaintyNanoInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.locationInfo.ExtrasInfo
 import pro.jayeshseth.knowyourhardware.ui.additionalInfos.locationInfo.HorizontalAccuracyInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.locationInfo.IsLocationMockInfo
 import pro.jayeshseth.knowyourhardware.ui.additionalInfos.locationInfo.LastKnownLocationInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.locationInfo.LiveLocationInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.locationInfo.MslAltitudeAccuracyInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.locationInfo.MslAltitudeInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.locationInfo.SpeedAccuracyInfo
+import pro.jayeshseth.knowyourhardware.ui.additionalInfos.locationInfo.SpeedInfo
 import pro.jayeshseth.knowyourhardware.ui.additionalInfos.locationInfo.VerticalAccuracyInfo
 import pro.jayeshseth.knowyourhardware.ui.composables.DURATION
 import pro.jayeshseth.knowyourhardware.ui.composables.InfoCard
 import pro.jayeshseth.knowyourhardware.ui.composables.Toggler
+import pro.jayeshseth.knowyourhardware.utils.formatLocationAge
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun LocationScreen(
+    gpsManager: GpsManager,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -73,29 +92,30 @@ fun LocationScreen(
     val trackLiveLocation = remember { mutableStateOf(false) }
     val showInMinutes = remember { mutableStateOf(false) }
     val showInSeconds = remember { mutableStateOf(false) }
-//    val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    val usePassiveProvider = remember { mutableStateOf(false) }
+    val useNetworkProvider = remember { mutableStateOf(false) }
+    val useGPSProvider = remember { mutableStateOf(false) }
+    val useFusedProvider = remember { mutableStateOf(true) }
+    val speedInKms = remember { mutableStateOf(false) }
+    val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
     val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-//    val minimumTimeInterval = remember {
-//        mutableStateOf(1)
-//    }
+    val timeInterval = TimeUnit.SECONDS.toMillis(1)
     val locationRequestGSM =
-        LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, TimeUnit.SECONDS.toMillis(1))
+        LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, timeInterval)
             .build()
 
     val locationRequest =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            android.location.LocationRequest.Builder(TimeUnit.SECONDS.toMillis(1)).build()
+            android.location.LocationRequest.Builder(timeInterval).build()
         } else {
             TODO("VERSION.SDK_INT < S")
         }
 
-//    val locationCallback: LocationCallback = object : LocationCallback() {
-//        override fun onLocationResult(result: LocationResult) {
-//            Log.d("location", "locations: ${result.locations[0]}")
-//            Log.d("location", "last location: ${result.lastLocation}")
-//        }
-//    }
-
+    val speed = if (speedInKms.value) {
+        "${liveLocation.value.speed * 3.6} Kph"
+    } else {
+        "${liveLocation.value.speed} m/s"
+    }
     if (ActivityCompat.checkSelfPermission(
             context,
             Manifest.permission.ACCESS_FINE_LOCATION
@@ -115,48 +135,82 @@ fun LocationScreen(
     }
 
     if (trackLiveLocation.value) {
-//        FusedLocationUpdatesListener(fusedLocationClient, locationRequestGSM) { result ->
-//            result.locations.map { location ->
-//                location.let {
-//                    liveLocation.value = it
-//                }
-//            }
-//        }
-
-        GpsLocationUpdatesListener(locationRequest = locationRequest) {
-            it.let {
+        if (useFusedProvider.value) {
+            FusedLocationUpdatesListener(fusedLocationClient, locationRequestGSM) { result ->
+                result.locations.map { location ->
+                    location.let {
+                        liveLocation.value = it
+                    }
+                }
+            }
+        }
+        if (useGPSProvider.value) {
+            GpsLocationUpdatesListener(
+                locationClient = locationManager,
+                locationRequest = locationRequest
+            ) {
+                it.let {
                     liveLocation.value = it
                 }
+            }
+        }
+        if (useNetworkProvider.value) {
+            NetworkLocationUpdatesListener(
+                locationClient = locationManager,
+                locationRequest = locationRequest
+            ) {
+                it.let {
+                    liveLocation.value = it
+                }
+            }
+        }
+        if (usePassiveProvider.value) {
+            PassiveLocationUpdatesListener(
+                locationClient = locationManager,
+                locationRequest = locationRequest
+            ) {
+                it.let {
+                    liveLocation.value = it
+                }
+            }
         }
     }
-//    Log.d("location", "${currentLocation.value.provider}")
 
-//    val locationListener = object : LocationListener {
-//        override fun onLocationChanged(p0: Location) {
-//            Log.d("location...", "${p0.provider}")
-//        }
-//
-//    }
-//
-//    fusedLocationClient.requestLocationUpdates(
-//        locationRequestGSM,
-//        locationCallback,
-//        Looper.getMainLooper()
-//    )
-//    Log.d("last loc", "${fusedLocationClient.lastLocation}")
+    if (useFusedProvider.value) {
+        fusedLocationClient.lastLocation.addOnSuccessListener { loc ->
+            loc.let {
+                lastKnownLocation.value = it
+            }
+        }
+    } else if (useGPSProvider.value) {
+        locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            .let {
+                if (it != null) {
+                    lastKnownLocation.value = it
+                }
+            }
+    } else if (useNetworkProvider.value) {
+        locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+            .let {
+                if (it != null) {
+                    lastKnownLocation.value = it
+                }
+            }
+    } else if (usePassiveProvider.value) {
+        locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)
+            .let {
+                if (it != null) {
+                    lastKnownLocation.value = it
+                }
+            }
+    } else {
+        fusedLocationClient.lastLocation.addOnSuccessListener { loc ->
+            loc.let {
+                lastKnownLocation.value = it
+            }
+        }
+    }
 
-//    fusedLocationClient.lastLocation.addOnSuccessListener { loc ->
-//        loc.let {
-//            lastKnownLocation.value = it
-//        }
-//    }
-//
-//    locationManager.requestLocationUpdates(
-//        LocationManager.GPS_PROVIDER,
-//        locationRequest,
-//        context.mainExecutor,
-//        locationListener
-//    )
     val lastKnownLocationTimestamp = SimpleDateFormat(
         "yyyy-MM-dd HH:mm:ss",
         Locale.getDefault()
@@ -199,13 +253,13 @@ fun LocationScreen(
             "Unavailable"
         }
     }
+
+    val selectedProvider = remember { mutableStateOf("fused") }
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = modifier
             .padding(horizontal = 16.dp)
-            .verticalScroll(
-                rememberScrollState()
-            )
+            .verticalScroll(rememberScrollState())
             .systemBarsPadding()
     ) {
         Toggler(
@@ -234,6 +288,83 @@ fun LocationScreen(
             painter = painterResource(R.drawable.round_access_time_filled_24),
             enabled = trackLiveLocation.value
         )
+        Toggler(
+            title = "Speed in KPH",
+            checked = speedInKms.value,
+            onCheckedChanged = {
+                speedInKms.value = it
+            },
+            painter = painterResource(R.drawable.speed),
+            enabled = trackLiveLocation.value
+        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            gpsManager.enabledProviders.value.map {
+                Text(
+                    text = it.replaceFirstChar { it.uppercase() },
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .clickable {
+                            selectedProvider.value = it
+                            when (it) {
+                                "passive" -> {
+                                    usePassiveProvider.value = true
+                                    useGPSProvider.value = false
+                                    useFusedProvider.value = false
+                                    useNetworkProvider.value = false
+                                }
+
+                                "gps" -> {
+                                    useGPSProvider.value = true
+                                    usePassiveProvider.value = false
+                                    useFusedProvider.value = false
+                                    useNetworkProvider.value = false
+                                }
+
+                                "fused" -> {
+                                    useFusedProvider.value = true
+                                    usePassiveProvider.value = false
+                                    useGPSProvider.value = false
+                                    useNetworkProvider.value = false
+                                }
+
+                                "network" -> {
+                                    useNetworkProvider.value = true
+                                    usePassiveProvider.value = false
+                                    useGPSProvider.value = false
+                                    useFusedProvider.value = false
+                                }
+                            }
+                        }
+                        .background(
+                            if (selectedProvider.value == it) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent
+                        )
+                        .border(
+                            2.dp,
+                            MaterialTheme.colorScheme.surfaceVariant,
+                            RoundedCornerShape(12.dp)
+                        )
+                        .padding(horizontal = 8.dp, vertical = 12.dp),
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+        InfoCard(
+            title = "Current Location Provider",
+            info = "${liveLocation.value.provider}",
+            enabled = true,
+            additionalInfoContent = { CurrentLocationProviderInfo() }
+        )
+        InfoCard(
+            title = "Is Location Mock",
+            info = "${liveLocation.value.isMock}",
+            enabled = true,
+            additionalInfoContent = { IsLocationMockInfo() }
+        )
         LocationInfoCard(
             title = "Last known location",
             latitude = "${lastKnownLocation.value.latitude}",
@@ -246,18 +377,20 @@ fun LocationScreen(
             title = "Live location",
             latitude = "${liveLocation.value.latitude}",
             longitude = "${liveLocation.value.longitude}",
-            time = liveLocationTimestamp
+            time = liveLocationTimestamp,
+            enabled = true,
+            additionalInfoContent = { LiveLocationInfo() }
         )
         InfoCard(
             title = "Location Horizontal Accuracy",
-            info = "${liveLocation.value.accuracy}",
+            info = if (liveLocation.value.hasAccuracy()) "${liveLocation.value.accuracy}" else "Unavailable",
             enabled = true,
             additionalInfoContent = { HorizontalAccuracyInfo() }
         )
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             InfoCard(
                 title = "Location Vertical Accuracy",
-                info = "${liveLocation.value.verticalAccuracyMeters}",
+                info = if (liveLocation.value.hasVerticalAccuracy()) "${liveLocation.value.verticalAccuracyMeters}" else "Unavailable",
                 enabled = true,
                 additionalInfoContent = { VerticalAccuracyInfo() }
             )
@@ -348,16 +481,22 @@ fun LocationScreen(
         }
         InfoCard(
             title = "Altitude",
-            info = if (liveLocation.value.hasAltitude()) "${liveLocation.value.altitude}" else "Unavailable"
+            info = if (liveLocation.value.hasAltitude()) "${liveLocation.value.altitude}" else "Unavailable",
+            enabled = true,
+            additionalInfoContent = { AltitudeInfo() }
         )
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             InfoCard(
                 title = "MSL Altitude",
-                info = if (liveLocation.value.hasMslAltitude()) "${liveLocation.value.mslAltitudeMeters}" else "Unavailable"
+                info = if (liveLocation.value.hasMslAltitude()) "${liveLocation.value.mslAltitudeMeters}" else "Unavailable",
+                enabled = true,
+                additionalInfoContent = { MslAltitudeInfo() }
             )
             InfoCard(
                 title = "MSL Altitude Accuracy",
-                info = if (liveLocation.value.hasMslAltitudeAccuracy()) "${liveLocation.value.mslAltitudeAccuracyMeters}" else "Unavailable"
+                info = if (liveLocation.value.hasMslAltitudeAccuracy()) "${liveLocation.value.mslAltitudeAccuracyMeters}" else "Unavailable",
+                enabled = true,
+                additionalInfoContent = { MslAltitudeAccuracyInfo() }
             )
         } else {
             Text(
@@ -369,17 +508,17 @@ fun LocationScreen(
             )
         }
         InfoCard(
-            title = "Current Location Provider",
-            info = "${liveLocation.value.provider}"
-        )
-        InfoCard(
             title = "Speed",
-            info = if (liveLocation.value.hasSpeed()) "${liveLocation.value.speed}" else "Unavailable"
+            info = if (liveLocation.value.hasSpeed()) speed else "Unavailable",
+            enabled = true,
+            additionalInfoContent = { SpeedInfo() }
         )
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             InfoCard(
                 title = "Speed Accuracy",
-                info = if (liveLocation.value.hasSpeedAccuracy()) "${liveLocation.value.speedAccuracyMetersPerSecond}" else "Unavailable"
+                info = if (liveLocation.value.hasSpeedAccuracy()) "${liveLocation.value.speedAccuracyMetersPerSecond}" else "Unavailable",
+                enabled = true,
+                additionalInfoContent = { SpeedAccuracyInfo() }
             )
         } else {
             Text(
@@ -392,20 +531,10 @@ fun LocationScreen(
         }
         InfoCard(
             title = "Location Extras",
-            info = "${liveLocation.value.extras}"
+            info = "${liveLocation.value.extras}",
+            enabled = true,
+            additionalInfoContent = { ExtrasInfo() }
         )
-//        InfoCard(
-//            title = "is moving",
-//            info = ""
-//        )
-//        InfoCard(
-//            title = "Moving Location accuracy",
-//            info = ""
-//        )
-//        InfoCard(
-//            title = "facing",
-//            info = ""
-//        )
         Text(
             text = "Location Capabilities",
             style = MaterialTheme.typography.titleMedium,
@@ -506,19 +635,7 @@ fun LocationScreen(
     }
 }
 
-fun formatLocationAge(ageInMilliseconds: Long): String {
-    val seconds = ageInMilliseconds / 1000
-    val minutes = seconds / 60
 
-    return if (minutes < 1) {
-        "$ageInMilliseconds ms (very recent)"
-    } else if (minutes < 60) {
-        "$minutes minute(s) ago"
-    } else {
-        val hours = minutes / 60
-        "$hours hour(s) ago"
-    }
-}
 
 @Composable
 fun LocationInfoCard(
@@ -554,10 +671,10 @@ fun LocationInfoCard(
                     .fillMaxWidth()
                     .weight(1.5f)
             ) {
-                Text(text = "Latitude - $latitude")
-                Text(text = "Longitude - $longitude")
+                Text(text = "Latitude: $latitude")
+                Text(text = "Longitude: $longitude")
                 if (time != null) {
-                    Text(text = "Time - $time")
+                    Text(text = "Time: $time")
                 }
             }
         }

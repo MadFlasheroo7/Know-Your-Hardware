@@ -33,7 +33,6 @@ fun FusedLocationUpdatesListener(
 
     // Whenever on of these parameters changes, dispose and restart the effect.
     DisposableEffect(locationRequest, lifecycleOwner) {
-//        val locationClient = LocationServices.getFusedLocationProviderClient(context)
         val locationCallback: LocationCallback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
                 currentOnUpdate(result)

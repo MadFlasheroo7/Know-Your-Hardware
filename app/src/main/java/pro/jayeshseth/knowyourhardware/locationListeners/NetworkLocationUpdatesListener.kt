@@ -23,7 +23,7 @@ import androidx.lifecycle.LifecycleOwner
     anyOf = [Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION],
 )
 @Composable
-fun GpsLocationUpdatesListener(
+fun NetworkLocationUpdatesListener(
     locationClient: LocationManager,
     locationRequest: LocationRequest,
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
@@ -38,7 +38,7 @@ fun GpsLocationUpdatesListener(
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_START) {
                 locationClient.requestLocationUpdates(
-                    LocationManager.GPS_PROVIDER,
+                    LocationManager.NETWORK_PROVIDER,
                     locationRequest,
                     context.mainExecutor,
                     locationListener

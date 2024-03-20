@@ -52,7 +52,7 @@ fun BRNavHost(
         composable(
             route = LOCATION_SCREEN_ROUTE
         ) {
-            LocationScreen()
+            LocationScreen(gpsManager)
         }
     }
 }

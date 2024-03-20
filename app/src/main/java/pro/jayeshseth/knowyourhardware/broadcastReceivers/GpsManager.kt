@@ -46,7 +46,7 @@ class GpsManager {
                 gnssCapabilities.value = locationManager.gnssCapabilities
                 @RequiresApi(S)
                 gpsProviderProperties.value =
-                    locationManager.getProviderProperties(LocationManager.GPS_PROVIDER)
+                    locationManager.getProviderProperties(LocationManager.FUSED_PROVIDER)
                 @RequiresApi(S)
                 gnssAntennaInfo = locationManager.gnssAntennaInfos
             }
@@ -104,5 +104,5 @@ private class InitialGpsStatus(context: Context) {
     val gnssCapabilities = locationManager.gnssCapabilities
 
     @RequiresApi(Build.VERSION_CODES.S)
-    val gpsProviderProperties = locationManager.getProviderProperties(LocationManager.GPS_PROVIDER)
+    val gpsProviderProperties = locationManager.getProviderProperties(LocationManager.FUSED_PROVIDER)
 }
