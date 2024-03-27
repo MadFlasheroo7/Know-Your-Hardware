@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import pro.jayeshseth.knowyourhardware.broadcastReceivers.GpsManager
+import pro.jayeshseth.knowyourhardware.ui.screens.DeviceInfoScreen
 import pro.jayeshseth.knowyourhardware.ui.screens.GPSScreen
 import pro.jayeshseth.knowyourhardware.ui.screens.GpsInfoScreen
 import pro.jayeshseth.knowyourhardware.ui.screens.HomeScreen
@@ -15,6 +16,7 @@ const val HOME_ROUTE = "home"
 const val GPS_SCREEN_ROUTE = "gps_route"
 const val GPS_INFO_SCREEN_ROUTE = "gps_info_route"
 const val LOCATION_SCREEN_ROUTE = "location_route"
+const val DEVICE_INFO_SCREEN_ROUTE = "device_info_route"
 
 
 @Composable
@@ -31,7 +33,8 @@ fun BRNavHost(
             route = HOME_ROUTE,
         ) {
             HomeScreen(
-                navToGpsScreen = { navController.navigate(GPS_SCREEN_ROUTE) }
+                navToGpsScreen = { navController.navigate(GPS_SCREEN_ROUTE) },
+                navToDeviceInfoScreen = { navController.navigate(DEVICE_INFO_SCREEN_ROUTE) }
             )
         }
         composable(
@@ -41,8 +44,6 @@ fun BRNavHost(
                 navToLocationScreen = { navController.navigate(LOCATION_SCREEN_ROUTE) },
                 navToGpsInfoScreen = { navController.navigate(GPS_INFO_SCREEN_ROUTE) }
             )
-//            GPSDataScreen()
-//            GpsInfoScreen(gpsManager = gpsManager)
         }
         composable(
             route = GPS_INFO_SCREEN_ROUTE
@@ -53,6 +54,11 @@ fun BRNavHost(
             route = LOCATION_SCREEN_ROUTE
         ) {
             LocationScreen(gpsManager)
+        }
+        composable(
+            route = DEVICE_INFO_SCREEN_ROUTE
+        ) {
+            DeviceInfoScreen()
         }
     }
 }

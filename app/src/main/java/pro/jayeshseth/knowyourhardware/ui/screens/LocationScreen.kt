@@ -38,11 +38,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
+import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
@@ -50,8 +54,6 @@ import pro.jayeshseth.knowyourhardware.R
 import pro.jayeshseth.knowyourhardware.broadcastReceivers.GpsManager
 import pro.jayeshseth.knowyourhardware.locationListeners.FusedLocationUpdatesListener
 import pro.jayeshseth.knowyourhardware.locationListeners.GpsLocationUpdatesListener
-import pro.jayeshseth.knowyourhardware.locationListeners.NetworkLocationUpdatesListener
-import pro.jayeshseth.knowyourhardware.locationListeners.PassiveLocationUpdatesListener
 import pro.jayeshseth.knowyourhardware.ui.additionalInfos.locationInfo.AltitudeInfo
 import pro.jayeshseth.knowyourhardware.ui.additionalInfos.locationInfo.BearingAccuracyInfo
 import pro.jayeshseth.knowyourhardware.ui.additionalInfos.locationInfo.BearingInfo
@@ -78,8 +80,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun LocationScreen(
@@ -104,12 +104,6 @@ fun LocationScreen(
         LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, timeInterval)
             .build()
 
-    val locationRequest =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            android.location.LocationRequest.Builder(timeInterval).build()
-        } else {
-            TODO("VERSION.SDK_INT < S")
-        }
 
     val speed = if (speedInKms.value) {
         "${liveLocation.value.speed * 3.6} Kph"
@@ -135,6 +129,12 @@ fun LocationScreen(
     }
 
     if (trackLiveLocation.value) {
+        val al = GoogleApiAvailability.getInstance().checkApiAvailability(fusedLocationClient)
+        al.addOnSuccessListener {
+            Log.d("available", "true $it")
+        }.addOnFailureListener {
+            Log.d("available", "false, $it")
+        }
         if (useFusedProvider.value) {
             FusedLocationUpdatesListener(fusedLocationClient, locationRequestGSM) { result ->
                 result.locations.map { location ->
@@ -145,34 +145,39 @@ fun LocationScreen(
             }
         }
         if (useGPSProvider.value) {
-            GpsLocationUpdatesListener(
-                locationClient = locationManager,
-                locationRequest = locationRequest
-            ) {
-                it.let {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val locationRequest = android.location.LocationRequest.Builder(timeInterval).build()
+                GpsLocationUpdatesListener(
+                    locationClient = locationManager,
+                    locationRequest = locationRequest
+                ) {
+                    liveLocation.value = it
+                }
+            } else {
+                GpsLocationUpdatesListener(locationClient = locationManager) {
                     liveLocation.value = it
                 }
             }
         }
         if (useNetworkProvider.value) {
-            NetworkLocationUpdatesListener(
-                locationClient = locationManager,
-                locationRequest = locationRequest
-            ) {
-                it.let {
-                    liveLocation.value = it
-                }
-            }
+//            NetworkLocationUpdatesListener(
+//                locationClient = locationManager,
+//                locationRequest = locationRequest
+//            ) {
+//                it.let {
+//                    liveLocation.value = it
+//                }
+//            }
         }
         if (usePassiveProvider.value) {
-            PassiveLocationUpdatesListener(
-                locationClient = locationManager,
-                locationRequest = locationRequest
-            ) {
-                it.let {
-                    liveLocation.value = it
-                }
-            }
+//            PassiveLocationUpdatesListener(
+//                locationClient = locationManager,
+//                locationRequest = locationRequest
+//            ) {
+//                it.let {
+//                    liveLocation.value = it
+//                }
+//            }
         }
     }
 
@@ -355,18 +360,48 @@ fun LocationScreen(
                 )
             }
         }
+        Text(
+            text = "Fused",
+            modifier = Modifier
+                .clip(RoundedCornerShape(12.dp))
+                .fillMaxWidth()
+                .clickable {
+
+                }
+                .background(
+                    if (selectedProvider.value == "Fused") MaterialTheme.colorScheme.surfaceVariant else Color.Transparent
+                )
+                .border(
+                    2.dp,
+                    MaterialTheme.colorScheme.surfaceVariant,
+                    RoundedCornerShape(12.dp)
+                )
+                .padding(horizontal = 8.dp, vertical = 12.dp),
+            textAlign = TextAlign.Center
+        )
+
         InfoCard(
             title = "Current Location Provider",
             info = "${liveLocation.value.provider}",
             enabled = true,
             additionalInfoContent = { CurrentLocationProviderInfo() }
         )
-        InfoCard(
-            title = "Is Location Mock",
-            info = "${liveLocation.value.isMock}",
-            enabled = true,
-            additionalInfoContent = { IsLocationMockInfo() }
-        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            InfoCard(
+                title = "Is Location Mock",
+                info = "${liveLocation.value.isMock}",
+                enabled = true,
+                additionalInfoContent = { IsLocationMockInfo() }
+            )
+        } else {
+            Text(
+                text = "Is Location Mock Information Unavailable for API 30 and below",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
         LocationInfoCard(
             title = "Last known location",
             latitude = "${lastKnownLocation.value.latitude}",
@@ -636,7 +671,6 @@ fun LocationScreen(
         }
     }
 }
-
 
 
 @Composable

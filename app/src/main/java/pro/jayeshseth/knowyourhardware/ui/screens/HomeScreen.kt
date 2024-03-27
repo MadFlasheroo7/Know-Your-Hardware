@@ -19,6 +19,7 @@ import pro.jayeshseth.knowyourhardware.ui.composables.InteractiveButton
 @Composable
 fun HomeScreen(
     navToGpsScreen: () -> Unit,
+    navToDeviceInfoScreen: () -> Unit,
 ) {
     Column {
         CenterAlignedTopAppBar(
@@ -39,6 +40,7 @@ fun HomeScreen(
                 .navigationBarsPadding()
         ) {
             InteractiveButton(text = "GPS", onClick = navToGpsScreen)
+            InteractiveButton(text = "Device Info", onClick = navToDeviceInfoScreen)
         }
     }
 }
