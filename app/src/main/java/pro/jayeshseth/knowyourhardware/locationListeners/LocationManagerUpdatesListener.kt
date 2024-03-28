@@ -23,7 +23,8 @@ import androidx.lifecycle.LifecycleOwner
     anyOf = [Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION],
 )
 @Composable
-fun PassiveLocationUpdatesListener(
+fun LocationManagerUpdatesListener(
+    provider: String,
     locationClient: LocationManager,
     locationRequest: LocationRequest,
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
@@ -38,9 +39,48 @@ fun PassiveLocationUpdatesListener(
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_START) {
                 locationClient.requestLocationUpdates(
-                    LocationManager.PASSIVE_PROVIDER,
+                    provider,
                     locationRequest,
                     context.mainExecutor,
+                    locationListener
+                )
+            } else if (event == Lifecycle.Event.ON_STOP) {
+                locationClient.removeUpdates(locationListener)
+            }
+        }
+
+        // Add the observer to the lifecycle
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        // When the effect leaves the Composition, remove the observer
+        onDispose {
+            locationClient.removeUpdates(locationListener)
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+}
+
+@RequiresPermission(
+    anyOf = [Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION],
+)
+@Composable
+fun LocationManagerUpdatesListener(
+    provider: String,
+    locationClient: LocationManager,
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
+    onUpdate: (result: Location) -> Unit,
+) {
+    val currentOnUpdate by rememberUpdatedState(newValue = onUpdate)
+
+    // Whenever on of these parameters changes, dispose and restart the effect.
+    DisposableEffect(lifecycleOwner) {
+        val locationListener = LocationListener { location -> currentOnUpdate(location) }
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_START) {
+                locationClient.requestLocationUpdates(
+                    provider,
+                    3_000,
+                    1f,
                     locationListener
                 )
             } else if (event == Lifecycle.Event.ON_STOP) {

@@ -6,25 +6,16 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
 import android.os.Build
-import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.LocationOn
@@ -35,25 +26,20 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
-import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
-import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import pro.jayeshseth.knowyourhardware.R
 import pro.jayeshseth.knowyourhardware.broadcastReceivers.GpsManager
-import pro.jayeshseth.knowyourhardware.locationListeners.FusedLocationUpdatesListener
-import pro.jayeshseth.knowyourhardware.locationListeners.GpsLocationUpdatesListener
+import pro.jayeshseth.knowyourhardware.locationListeners.FusedLocationProviderUpdatesListener
+import pro.jayeshseth.knowyourhardware.locationListeners.LocationManagerUpdatesListener
 import pro.jayeshseth.knowyourhardware.ui.additionalInfos.locationInfo.AltitudeInfo
 import pro.jayeshseth.knowyourhardware.ui.additionalInfos.locationInfo.BearingAccuracyInfo
 import pro.jayeshseth.knowyourhardware.ui.additionalInfos.locationInfo.BearingInfo
@@ -72,8 +58,9 @@ import pro.jayeshseth.knowyourhardware.ui.additionalInfos.locationInfo.MslAltitu
 import pro.jayeshseth.knowyourhardware.ui.additionalInfos.locationInfo.SpeedAccuracyInfo
 import pro.jayeshseth.knowyourhardware.ui.additionalInfos.locationInfo.SpeedInfo
 import pro.jayeshseth.knowyourhardware.ui.additionalInfos.locationInfo.VerticalAccuracyInfo
-import pro.jayeshseth.knowyourhardware.ui.composables.DURATION
 import pro.jayeshseth.knowyourhardware.ui.composables.InfoCard
+import pro.jayeshseth.knowyourhardware.ui.composables.LocationInfoCard
+import pro.jayeshseth.knowyourhardware.ui.composables.ProviderButton
 import pro.jayeshseth.knowyourhardware.ui.composables.Toggler
 import pro.jayeshseth.knowyourhardware.utils.formatLocationAge
 import java.text.SimpleDateFormat
@@ -95,7 +82,9 @@ fun LocationScreen(
     val usePassiveProvider = remember { mutableStateOf(false) }
     val useNetworkProvider = remember { mutableStateOf(false) }
     val useGPSProvider = remember { mutableStateOf(false) }
-    val useFusedProvider = remember { mutableStateOf(true) }
+    val useFusedProvider = remember { mutableStateOf(false) }
+    val useFusedGMSProvider = remember { mutableStateOf(true) }
+    val isFusedProviderClientAvailable = remember { mutableStateOf(true) }
     val speedInKms = remember { mutableStateOf(false) }
     val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
     val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
@@ -104,6 +93,7 @@ fun LocationScreen(
         LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, timeInterval)
             .build()
 
+    val selectedProvider = remember { mutableStateOf("FusedGMS") }
 
     val speed = if (speedInKms.value) {
         "${liveLocation.value.speed * 3.6} Kph"
@@ -127,16 +117,20 @@ fun LocationScreen(
         // for ActivityCompat#requestPermissions for more details.
         return
     }
+    val fusedLocationProviderClientAvailability =
+        GoogleApiAvailability.getInstance().checkApiAvailability(fusedLocationClient)
+    fusedLocationProviderClientAvailability.addOnSuccessListener {
+        isFusedProviderClientAvailable.value = true
+    }.addOnFailureListener {
+        isFusedProviderClientAvailable.value = false
+    }
 
     if (trackLiveLocation.value) {
-        val al = GoogleApiAvailability.getInstance().checkApiAvailability(fusedLocationClient)
-        al.addOnSuccessListener {
-            Log.d("available", "true $it")
-        }.addOnFailureListener {
-            Log.d("available", "false, $it")
-        }
-        if (useFusedProvider.value) {
-            FusedLocationUpdatesListener(fusedLocationClient, locationRequestGSM) { result ->
+        if (useFusedGMSProvider.value) {
+            FusedLocationProviderUpdatesListener(
+                fusedLocationClient,
+                locationRequestGSM
+            ) { result ->
                 result.locations.map { location ->
                     location.let {
                         liveLocation.value = it
@@ -144,50 +138,85 @@ fun LocationScreen(
                 }
             }
         }
+        if (useFusedProvider.value) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val locationRequest = android.location.LocationRequest.Builder(timeInterval).build()
+                LocationManagerUpdatesListener(
+                    provider = LocationManager.FUSED_PROVIDER,
+                    locationClient = locationManager,
+                    locationRequest = locationRequest
+                ) {
+                    liveLocation.value = it
+                }
+            }
+        }
         if (useGPSProvider.value) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 val locationRequest = android.location.LocationRequest.Builder(timeInterval).build()
-                GpsLocationUpdatesListener(
+                LocationManagerUpdatesListener(
+                    provider = LocationManager.GPS_PROVIDER,
                     locationClient = locationManager,
                     locationRequest = locationRequest
                 ) {
                     liveLocation.value = it
                 }
             } else {
-                GpsLocationUpdatesListener(locationClient = locationManager) {
+                LocationManagerUpdatesListener(
+                    provider = LocationManager.GPS_PROVIDER,
+                    locationClient = locationManager
+                ) {
                     liveLocation.value = it
                 }
             }
         }
         if (useNetworkProvider.value) {
-//            NetworkLocationUpdatesListener(
-//                locationClient = locationManager,
-//                locationRequest = locationRequest
-//            ) {
-//                it.let {
-//                    liveLocation.value = it
-//                }
-//            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val locationRequest = android.location.LocationRequest.Builder(timeInterval).build()
+                LocationManagerUpdatesListener(
+                    provider = LocationManager.NETWORK_PROVIDER,
+                    locationClient = locationManager,
+                    locationRequest = locationRequest
+                ) {
+                    liveLocation.value = it
+                }
+            } else {
+                LocationManagerUpdatesListener(
+                    provider = LocationManager.PASSIVE_PROVIDER,
+                    locationClient = locationManager
+                ) {
+                    liveLocation.value = it
+                }
+            }
         }
         if (usePassiveProvider.value) {
-//            PassiveLocationUpdatesListener(
-//                locationClient = locationManager,
-//                locationRequest = locationRequest
-//            ) {
-//                it.let {
-//                    liveLocation.value = it
-//                }
-//            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val locationRequest = android.location.LocationRequest.Builder(timeInterval).build()
+                LocationManagerUpdatesListener(
+                    provider = LocationManager.GPS_PROVIDER,
+                    locationClient = locationManager,
+                    locationRequest = locationRequest
+                ) {
+                    liveLocation.value = it
+                }
+            } else {
+                LocationManagerUpdatesListener(
+                    provider = LocationManager.GPS_PROVIDER,
+                    locationClient = locationManager
+                ) {
+                    liveLocation.value = it
+                }
+            }
         }
     }
 
     if (useFusedProvider.value) {
-        fusedLocationClient.lastLocation.addOnSuccessListener { loc ->
-            loc.let {
-                if (it != null) {
-                    lastKnownLocation.value = it
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            locationManager.getLastKnownLocation(LocationManager.FUSED_PROVIDER)
+                .let {
+                    if (it != null) {
+                        lastKnownLocation.value = it
+                    }
                 }
-            }
         }
     } else if (useGPSProvider.value) {
         locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
@@ -210,6 +239,12 @@ fun LocationScreen(
                     lastKnownLocation.value = it
                 }
             }
+    } else if (useFusedGMSProvider.value) {
+        fusedLocationClient.lastLocation.addOnSuccessListener { loc ->
+            loc.let {
+                lastKnownLocation.value = it
+            }
+        }
     } else {
         fusedLocationClient.lastLocation.addOnSuccessListener { loc ->
             loc.let {
@@ -261,7 +296,6 @@ fun LocationScreen(
         }
     }
 
-    val selectedProvider = remember { mutableStateOf("fused") }
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = modifier
@@ -304,85 +338,74 @@ fun LocationScreen(
             painter = painterResource(R.drawable.speed),
             enabled = trackLiveLocation.value
         )
+        ProviderButton(
+            text = "Fused (Google Play Services)",
+            onClick = {
+                selectedProvider.value = "FusedGMS"
+                useFusedGMSProvider.value = true
+                usePassiveProvider.value = false
+                useGPSProvider.value = false
+                useFusedProvider.value = false
+                useNetworkProvider.value = false
+            },
+            isSelected = selectedProvider.value == "FusedGMS"
+        )
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth()
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Max)
         ) {
-            gpsManager.enabledProviders.value.map {
-                Text(
-                    text = it.replaceFirstChar { it.uppercase() },
+            gpsManager.enabledProviders.value.map { provider ->
+                ProviderButton(
+                    text = provider.replaceFirstChar { it.uppercase() },
+                    isSelected = selectedProvider.value == provider,
                     modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
                         .weight(1f)
-                        .fillMaxWidth()
-                        .clickable {
-                            selectedProvider.value = it
-                            when (it) {
-                                "passive" -> {
-                                    usePassiveProvider.value = true
-                                    useGPSProvider.value = false
-                                    useFusedProvider.value = false
-                                    useNetworkProvider.value = false
-                                }
+                        .fillMaxSize(),
+                    onClick = {
+                        selectedProvider.value = provider
+                        when (provider) {
+                            "passive" -> {
+                                usePassiveProvider.value = true
+                                useGPSProvider.value = false
+                                useFusedProvider.value = false
+                                useNetworkProvider.value = false
+                                useFusedGMSProvider.value = false
+                            }
 
-                                "gps" -> {
-                                    useGPSProvider.value = true
-                                    usePassiveProvider.value = false
-                                    useFusedProvider.value = false
-                                    useNetworkProvider.value = false
-                                }
+                            "gps" -> {
+                                useGPSProvider.value = true
+                                usePassiveProvider.value = false
+                                useFusedProvider.value = false
+                                useNetworkProvider.value = false
+                                useFusedGMSProvider.value = false
+                            }
 
-                                "fused" -> {
-                                    useFusedProvider.value = true
-                                    usePassiveProvider.value = false
-                                    useGPSProvider.value = false
-                                    useNetworkProvider.value = false
-                                }
+                            "fused" -> {
+                                useFusedProvider.value = true
+                                usePassiveProvider.value = false
+                                useGPSProvider.value = false
+                                useNetworkProvider.value = false
+                                useFusedGMSProvider.value = false
+                            }
 
-                                "network" -> {
-                                    useNetworkProvider.value = true
-                                    usePassiveProvider.value = false
-                                    useGPSProvider.value = false
-                                    useFusedProvider.value = false
-                                }
+                            "network" -> {
+                                useNetworkProvider.value = true
+                                usePassiveProvider.value = false
+                                useGPSProvider.value = false
+                                useFusedProvider.value = false
+                                useFusedGMSProvider.value = false
                             }
                         }
-                        .background(
-                            if (selectedProvider.value == it) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent
-                        )
-                        .border(
-                            2.dp,
-                            MaterialTheme.colorScheme.surfaceVariant,
-                            RoundedCornerShape(12.dp)
-                        )
-                        .padding(horizontal = 8.dp, vertical = 12.dp),
-                    textAlign = TextAlign.Center
+                    }
                 )
             }
         }
-        Text(
-            text = "Fused",
-            modifier = Modifier
-                .clip(RoundedCornerShape(12.dp))
-                .fillMaxWidth()
-                .clickable {
-
-                }
-                .background(
-                    if (selectedProvider.value == "Fused") MaterialTheme.colorScheme.surfaceVariant else Color.Transparent
-                )
-                .border(
-                    2.dp,
-                    MaterialTheme.colorScheme.surfaceVariant,
-                    RoundedCornerShape(12.dp)
-                )
-                .padding(horizontal = 8.dp, vertical = 12.dp),
-            textAlign = TextAlign.Center
-        )
-
         InfoCard(
             title = "Current Location Provider",
-            info = "${liveLocation.value.provider}",
+            info = if (useFusedGMSProvider.value && trackLiveLocation.value) "${liveLocation.value.provider} (GMS)" else "${liveLocation.value.provider}",
             enabled = true,
             additionalInfoContent = { CurrentLocationProviderInfo() }
         )
@@ -673,58 +696,3 @@ fun LocationScreen(
 }
 
 
-@Composable
-fun LocationInfoCard(
-    title: String,
-    latitude: String,
-    longitude: String,
-    modifier: Modifier = Modifier,
-    time: String? = null,
-    enabled: Boolean = false,
-    additionalInfoContent: @Composable (ColumnScope.() -> Unit) = {}
-) {
-    val isVisible = remember { mutableStateOf(false) }
-    Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .fillMaxWidth()
-            .clickable(
-                enabled = enabled,
-                onClick = { isVisible.value = !isVisible.value }
-            )
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(text = "$title :", fontWeight = FontWeight.Bold, modifier = Modifier.weight(0.5f))
-            Column(
-                horizontalAlignment = Alignment.End,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1.5f)
-            ) {
-                Text(text = "Latitude: $latitude")
-                Text(text = "Longitude: $longitude")
-                if (time != null) {
-                    Text(text = "Time: $time")
-                }
-            }
-        }
-        AnimatedVisibility(
-            visible = isVisible.value,
-            enter = expandVertically(tween(DURATION, easing = FastOutSlowInEasing)),
-            exit = shrinkVertically(
-                animationSpec = tween(
-                    DURATION,
-                    easing = FastOutSlowInEasing
-                )
-            ) + fadeOut()
-        ) {
-            additionalInfoContent()
-        }
-    }
-}

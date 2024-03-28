@@ -16,19 +16,17 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
 
 @RequiresPermission(
     anyOf = [Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION],
 )
 @Composable
-fun FusedLocationUpdatesListener(
+fun FusedLocationProviderUpdatesListener(
     locationClient: FusedLocationProviderClient,
     locationRequest: LocationRequest,
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     onUpdate: (result: LocationResult) -> Unit,
 ) {
-    val context = LocalContext.current
     val currentOnUpdate by rememberUpdatedState(newValue = onUpdate)
 
     // Whenever on of these parameters changes, dispose and restart the effect.
