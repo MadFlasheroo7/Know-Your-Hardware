@@ -1,4 +1,5 @@
 [versions]
+accompanistPermissions = "0.35.0-alpha"
 agp = "8.3.0-rc02"
 kotlin = "1.9.22"
 coreKtx = "1.12.0"
@@ -10,8 +11,10 @@ activityCompose = "1.8.2"
 composeBom = "2024.01.00"
 navigation = "2.7.6"
 playServicesLocation = "21.2.0"
+rebugger = "1.0.0-rc02"
 
 [libraries]
+accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanistPermissions" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
@@ -28,6 +31,7 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
+rebugger = { module = "io.github.theapache64:rebugger", version.ref = "rebugger" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
