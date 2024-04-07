@@ -25,8 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import com.theapache64.rebugger.Rebugger
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 
 const val DURATION = 780
 
@@ -39,6 +39,17 @@ fun InfoCard(
     additionalInfoContent: @Composable (ColumnScope.() -> Unit) = {}
 ) {
     val isVisible = remember { mutableStateOf(false) }
+    Rebugger(
+        composableName = "InfoCard",
+        trackMap = mapOf(
+            "title" to title,
+            "isVisible" to isVisible,
+            "info" to info,
+            "modifier" to modifier,
+            "enabled" to enabled,
+            "additionalInfoContent" to additionalInfoContent,
+        ),
+    )
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))

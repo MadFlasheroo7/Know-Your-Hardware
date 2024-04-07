@@ -11,10 +11,14 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
+import com.theapache64.rebugger.Rebugger
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -26,6 +30,17 @@ fun Toggler(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
 ) {
+    Rebugger(
+        composableName = "imageVector Toggler",
+        trackMap = mapOf(
+            "imageVector" to imageVector,
+            "title" to title,
+            "checked" to checked,
+            "onCheckedChanged" to onCheckedChanged,
+            "modifier" to modifier,
+            "enabled" to enabled,
+        ),
+    )
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -50,13 +65,26 @@ fun Toggler(
 
 @Composable
 fun Toggler(
-    painter: Painter,
+    drawResIcon: Int,
     title: String,
     checked: Boolean,
     onCheckedChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true
 ) {
+    Rebugger(
+        composableName = "Painter Toggler",
+        trackMap = mapOf(
+            "icon" to drawResIcon,
+            "title" to title,
+            "checked" to checked,
+            "onCheckedChanged" to onCheckedChanged,
+            "modifier" to modifier,
+            "enabled" to enabled,
+        ),
+    )
+    val icon = painterResource(id = drawResIcon)
+
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -69,7 +97,7 @@ fun Toggler(
             onCheckedChange = onCheckedChanged,
             thumbContent = {
                 Icon(
-                    painter = painter,
+                    painter = icon,
                     contentDescription = "",
                     modifier = Modifier.size(SwitchDefaults.IconSize)
                 )

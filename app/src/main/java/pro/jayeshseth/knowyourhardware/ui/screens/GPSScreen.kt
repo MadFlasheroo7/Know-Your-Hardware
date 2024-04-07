@@ -15,15 +15,13 @@ fun GPSScreen(
     navToGpsInfoScreen: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column {
-        Column(
-            modifier = modifier
-                .verticalScroll(rememberScrollState())
-                .statusBarsPadding()
-                .navigationBarsPadding()
-        ) {
-            InteractiveButton(text = "GPS Info", onClick = navToGpsInfoScreen)
-            InteractiveButton(text = "Location", onClick = navToLocationScreen)
-        }
+    Column(
+        modifier = modifier
+            .verticalScroll(rememberScrollState())
+            .statusBarsPadding()
+            .navigationBarsPadding()
+    ) {
+        InteractiveButton(text = "GPS Info", onClick = navToGpsInfoScreen)
+        InteractiveButton(text = "Location", onClick = navToLocationScreen)
     }
 }

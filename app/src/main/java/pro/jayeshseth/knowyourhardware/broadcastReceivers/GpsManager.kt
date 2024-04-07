@@ -16,16 +16,20 @@ import androidx.compose.runtime.mutableStateOf
 
 class GpsManager {
     val isGpsEnabled = mutableStateOf(false)
+
     @RequiresApi(P)
     val isLocationEnabled = mutableStateOf(false)
+
     @RequiresApi(P)
     val gnssHardwareModelName = mutableStateOf<String?>("")
     val gnssHardwareYear = mutableStateOf<Int?>(0)
     val allProviders = mutableStateOf(listOf<String>())
     val enabledProviders = mutableStateOf(listOf<String>())
+
     @RequiresApi(S)
     var gnssAntennaInfo: MutableList<GnssAntennaInfo>? = null
     val gnssCapabilities = mutableStateOf<GnssCapabilities?>(null)
+
     @RequiresApi(S)
     val gpsProviderProperties = mutableStateOf<ProviderProperties?>(null)
 
@@ -86,21 +90,18 @@ private class InitialGpsStatus(context: Context) {
     val isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
     val allProviders = locationManager.allProviders
 
-//    @RequiresApi(P)
     val gnssHardwareModel = if (Build.VERSION.SDK_INT >= P) {
-    locationManager.gnssHardwareModelName
-} else {
-    null
-}
+        locationManager.gnssHardwareModelName
+    } else {
+        null
+    }
 
-    //    @RequiresApi(P)
     val gnssHardwareYear = if (Build.VERSION.SDK_INT >= P) {
         locationManager.gnssYearOfHardware
     } else {
         null
     }
 
-    //    @RequiresApi(P)
     val isLocationEnabled = if (Build.VERSION.SDK_INT >= P) {
         locationManager.isLocationEnabled
     } else {
@@ -109,24 +110,21 @@ private class InitialGpsStatus(context: Context) {
 
     val enabledProvider: MutableList<String> = locationManager.getProviders(true)
 
-//    @RequiresApi(S)
     val gnssAntennaInfos: MutableList<GnssAntennaInfo>? = if (Build.VERSION.SDK_INT >= S) {
-    locationManager.gnssAntennaInfos
-} else {
-    null
-} //TODO
+        locationManager.gnssAntennaInfos
+    } else {
+        null
+    }
 
-//    @RequiresApi(Build.VERSION_CODES.R)
     val gnssCapabilities = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-    locationManager.gnssCapabilities
-} else {
-    null
-}
+        locationManager.gnssCapabilities
+    } else {
+        null
+    }
 
-//    @RequiresApi(Build.VERSION_CODES.S)
     val gpsProviderProperties = if (Build.VERSION.SDK_INT >= S) {
-    locationManager.getProviderProperties(LocationManager.FUSED_PROVIDER)
-} else {
-    null
-}
+        locationManager.getProviderProperties(LocationManager.FUSED_PROVIDER)
+    } else {
+        null
+    }
 }

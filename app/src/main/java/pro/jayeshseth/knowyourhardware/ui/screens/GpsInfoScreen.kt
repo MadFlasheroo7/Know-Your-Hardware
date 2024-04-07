@@ -41,6 +41,7 @@ import pro.jayeshseth.knowyourhardware.ui.additionalInfos.gpsInfo.SatellitePvtIn
 import pro.jayeshseth.knowyourhardware.ui.additionalInfos.gpsInfo.SchedulingInfo
 import pro.jayeshseth.knowyourhardware.ui.additionalInfos.gpsInfo.SingleShotFixInfo
 import pro.jayeshseth.knowyourhardware.ui.composables.InfoCard
+import pro.jayeshseth.knowyourhardware.ui.composables.MinSdkText
 import pro.jayeshseth.knowyourhardware.ui.composables.TitleText
 
 @Composable
@@ -64,15 +65,8 @@ fun GpsInfoScreen(gpsManager: GpsManager, modifier: Modifier = Modifier) {
                 info = if (gpsManager.isLocationEnabled.value) "Enabled" else "Disabled"
             )
         } else {
-            Text(
-                text = "\"isLocationEnabled\" Unavailable for API below 28",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
+            MinSdkText(title = "Is Location Enabled", minSdk = Build.VERSION_CODES.P)
         }
-
         InfoCard(
             title = "All Providers",
             info = "${gpsManager.allProviders.value}"
@@ -87,13 +81,7 @@ fun GpsInfoScreen(gpsManager: GpsManager, modifier: Modifier = Modifier) {
                 info = "${gpsManager.gpsProviderProperties.value}"
             )
         } else {
-            Text(
-                text = "Provider Properties Unavailable for API below 31",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
+            MinSdkText(title = "Provider Properties", minSdk = Build.VERSION_CODES.S)
         }
         TitleText(text = "GNSS")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -102,13 +90,7 @@ fun GpsInfoScreen(gpsManager: GpsManager, modifier: Modifier = Modifier) {
                 info = "${gpsManager.gnssHardwareModelName.value}"
             )
         } else {
-            Text(
-                text = "Provider Properties Unavailable for API below 28",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
+            MinSdkText(title = "Gnss Hardware", minSdk = Build.VERSION_CODES.P)
         }
         InfoCard(
             title = "Gnss Hardware Year",
@@ -120,13 +102,7 @@ fun GpsInfoScreen(gpsManager: GpsManager, modifier: Modifier = Modifier) {
                 info = "${gpsManager.gnssAntennaInfo}"
             )
         } else {
-            Text(
-                text = "Antenna Info Unavailable for API below 31",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
+            MinSdkText(title = "Gnss Antenna", minSdk = Build.VERSION_CODES.S)
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             InfoCard(
@@ -134,13 +110,7 @@ fun GpsInfoScreen(gpsManager: GpsManager, modifier: Modifier = Modifier) {
                 info = "${gpsManager.gnssCapabilities.value?.gnssSignalTypes}"
             )
         } else {
-            Text(
-                text = "Signal Type Information Unavailable for API below 34",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
+            MinSdkText(title = "Gnss Signal Types", minSdk = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
         }
         Text(
             text = "GNSS Capabilities",
@@ -296,7 +266,7 @@ fun GpsInfoScreen(gpsManager: GpsManager, modifier: Modifier = Modifier) {
             )
         } else {
             Text(
-                text = "Information Unavailable for API below 34",
+                text = "Gnss Capabilities Unavailable for API below 34",
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
