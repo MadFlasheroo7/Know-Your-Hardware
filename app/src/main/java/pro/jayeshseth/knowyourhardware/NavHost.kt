@@ -5,12 +5,12 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import pro.jayeshseth.knowyourhardware.broadcastReceivers.GpsManager
-import pro.jayeshseth.knowyourhardware.ui.screens.DeviceInfoScreen
-import pro.jayeshseth.knowyourhardware.ui.screens.GPSScreen
-import pro.jayeshseth.knowyourhardware.ui.screens.GpsInfoScreen
+import pro.jayeshseth.knowyourhardware.features.gps.broadcastReceiver.GpsManager
+import pro.jayeshseth.knowyourhardware.features.deviceInfo.screens.DeviceInfoScreen
+import pro.jayeshseth.knowyourhardware.features.gps.screens.GPSScreen
+import pro.jayeshseth.knowyourhardware.features.gps.screens.GpsInfoScreen
 import pro.jayeshseth.knowyourhardware.ui.screens.HomeScreen
-import pro.jayeshseth.knowyourhardware.ui.screens.LocationScreen
+import pro.jayeshseth.knowyourhardware.features.gps.screens.LocationScreen
 
 const val HOME_ROUTE = "home"
 const val GPS_SCREEN_ROUTE = "gps_route"

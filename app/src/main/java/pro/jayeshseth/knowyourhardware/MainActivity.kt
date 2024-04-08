@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import pro.jayeshseth.knowyourhardware.broadcastReceivers.GpsManager
+import pro.jayeshseth.knowyourhardware.features.gps.broadcastReceiver.GpsManager
 import pro.jayeshseth.knowyourhardware.ui.theme.BroadcastReceiversTheme
 
 class MainActivity : ComponentActivity() {

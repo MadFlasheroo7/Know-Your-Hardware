@@ -24,12 +24,14 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
+import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 import pro.jayeshseth.knowyourhardware.ui.composables.InteractiveButton
+import pro.jayeshseth.knowyourhardware.ui.composables.RationaleDialog
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -217,53 +219,10 @@ fun PermissionScreen(
     }
 }
 
-@Composable
-fun RationaleDialog(
-    context: Context,
-    title: String,
-    rationale: String,
-    isPermanentlyDeclined: Boolean,
-    onConfirmClick: () -> Unit,
-    onDismissRequest: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    AlertDialog(
-        modifier = modifier,
-        onDismissRequest = onDismissRequest,
-        title = { Text(title) },
-        text = {
-            Text(rationale)
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    if (isPermanentlyDeclined) {
-                        val intent = Intent(
-                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                            Uri.fromParts("package", context.packageName, null)
-                        )
-                        context.startActivity(intent)
-                    } else {
-                        onConfirmClick()
-                    }
-                }
-            ) {
-                Text(if (isPermanentlyDeclined) "Go To Settings".lowercase() else "I Understand")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = { onDismissRequest() }) {
-                Text("Dismiss")
-            }
-        }
-    )
-
-}
-
-fun String.trimAndroidPrefix(): String {
+private fun String.trimAndroidPrefix(): String {
     return this.removePrefix("android.permission.")
 }
 
-fun isAtleastDeclinedOnce(context: Context, permission: String): Boolean {
-    return ActivityCompat.shouldShowRequestPermissionRationale(context as Activity, permission)
+private fun isAtleastDeclinedOnce(context: Context, permission: String): Boolean {
+    return shouldShowRequestPermissionRationale(context as Activity, permission)
 }
