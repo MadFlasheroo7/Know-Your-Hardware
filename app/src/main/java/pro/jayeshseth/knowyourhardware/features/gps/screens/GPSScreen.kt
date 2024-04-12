@@ -3,6 +3,7 @@ package pro.jayeshseth.knowyourhardware.features.gps.screens
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -18,8 +19,7 @@ fun GPSScreen(
     Column(
         modifier = modifier
             .verticalScroll(rememberScrollState())
-            .statusBarsPadding()
-            .navigationBarsPadding()
+            .systemBarsPadding()
     ) {
         InteractiveButton(text = "GPS Info", onClick = navToGpsInfoScreen)
         InteractiveButton(text = "Location", onClick = navToLocationScreen)

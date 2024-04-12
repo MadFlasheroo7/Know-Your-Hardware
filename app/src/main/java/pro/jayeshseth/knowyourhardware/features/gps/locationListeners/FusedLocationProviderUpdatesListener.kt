@@ -15,7 +15,6 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
-import pro.jayeshseth.knowyourhardware.ui.composables.MinSdkText
 
 @RequiresPermission(
     anyOf = [Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION],
@@ -28,7 +27,6 @@ fun FusedLocationProviderUpdatesListener(
     onUpdate: (result: LocationResult) -> Unit,
 ) {
     val currentOnUpdate by rememberUpdatedState(newValue = onUpdate)
-    MinSdkText(title = "", minSdk = 12)
 
     // Whenever on of these parameters changes, dispose and restart the effect.
     DisposableEffect(locationRequest, lifecycleOwner) {

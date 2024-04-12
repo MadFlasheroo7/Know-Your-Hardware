@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -13,7 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import pro.jayeshseth.knowyourhardware.ui.composables.MinSdkText
 import pro.jayeshseth.knowyourhardware.ui.composables.InfoCard
 
 @Composable
@@ -25,9 +23,8 @@ fun DeviceInfoScreen(modifier: Modifier = Modifier) {
             .verticalScroll(
                 rememberScrollState()
             )
-            .systemBarsPadding()
+//            .systemBarsPadding()
     ) {
-        MinSdkText(title = "", minSdk = 12)
         InfoCard(title = "API Version", info = "${Build.VERSION.SDK_INT}")
         InfoCard(title = "Board", info = Build.BOARD)
         InfoCard(title = "Bootloader Version", info = Build.BOOTLOADER)

@@ -6,6 +6,7 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.location.LocationRequest
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import androidx.compose.runtime.Composable
@@ -34,7 +35,7 @@ fun LocationManagerUpdatesListener(
     val currentOnUpdate by rememberUpdatedState(newValue = onUpdate)
 
     // Whenever on of these parameters changes, dispose and restart the effect.
-    DisposableEffect(locationRequest, lifecycleOwner) {
+    DisposableEffect(provider, locationRequest, lifecycleOwner) {
         val locationListener = LocationListener { location -> currentOnUpdate(location) }
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_START) {

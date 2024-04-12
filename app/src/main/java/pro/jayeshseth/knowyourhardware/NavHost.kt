@@ -1,5 +1,6 @@
 package pro.jayeshseth.knowyourhardware
 
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
@@ -22,10 +23,11 @@ const val DEVICE_INFO_SCREEN_ROUTE = "device_info_route"
 @Composable
 fun BRNavHost(
     gpsManager: GpsManager,
+    modifier: Modifier = Modifier
 ) {
     val navController = rememberNavController()
     NavHost(
-        modifier = Modifier,
+        modifier = modifier,
         navController = navController,
         startDestination = HOME_ROUTE
     ) {

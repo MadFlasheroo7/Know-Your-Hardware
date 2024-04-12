@@ -42,20 +42,6 @@ fun ProviderButton(
     ) {
         Text(
             text = text,
-//            modifier = modifier
-//                .clip(RoundedCornerShape(12.dp))
-//                .fillMaxWidth()
-//                .clickable(onClick = onClick)
-//                .background(
-//                    if (isSelected) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent
-//                )
-//                .border(
-//                    2.dp,
-//                    MaterialTheme.colorScheme.surfaceVariant,
-//                    RoundedCornerShape(12.dp)
-//                )
-//                .padding(horizontal = 8.dp, vertical = 12.dp),
-//            textAlign = TextAlign.Center
         )
     }
 }

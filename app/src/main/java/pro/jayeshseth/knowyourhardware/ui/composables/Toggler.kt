@@ -1,5 +1,6 @@
 package pro.jayeshseth.knowyourhardware.ui.composables
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,49 +24,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun Toggler(
-    imageVector: ImageVector,
-    title: String,
-    checked: Boolean,
-    onCheckedChanged: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-) {
-    Rebugger(
-        composableName = "imageVector Toggler",
-        trackMap = mapOf(
-            "imageVector" to imageVector,
-            "title" to title,
-            "checked" to checked,
-            "onCheckedChanged" to onCheckedChanged,
-            "modifier" to modifier,
-            "enabled" to enabled,
-        ),
-    )
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(text = title)
-        Spacer(modifier = Modifier.padding(8.dp))
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChanged,
-            thumbContent = {
-                Icon(
-                    imageVector = imageVector,
-                    contentDescription = "",
-                    modifier = Modifier.size(SwitchDefaults.IconSize)
-                )
-            },
-            enabled = enabled
-        )
-    }
-}
-
-@Composable
-fun Toggler(
-    drawResIcon: Int,
+    @DrawableRes icon: Int,
     title: String,
     checked: Boolean,
     onCheckedChanged: (Boolean) -> Unit,
@@ -75,7 +34,7 @@ fun Toggler(
     Rebugger(
         composableName = "Painter Toggler",
         trackMap = mapOf(
-            "icon" to drawResIcon,
+            "icon" to icon,
             "title" to title,
             "checked" to checked,
             "onCheckedChanged" to onCheckedChanged,
@@ -83,7 +42,7 @@ fun Toggler(
             "enabled" to enabled,
         ),
     )
-    val icon = painterResource(id = drawResIcon)
+    val painter = painterResource(id = icon)
 
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -97,7 +56,7 @@ fun Toggler(
             onCheckedChange = onCheckedChanged,
             thumbContent = {
                 Icon(
-                    painter = icon,
+                    painter = painter,
                     contentDescription = "",
                     modifier = Modifier.size(SwitchDefaults.IconSize)
                 )

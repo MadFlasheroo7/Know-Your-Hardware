@@ -1,5 +1,6 @@
 package pro.jayeshseth.knowyourhardware.ui.composables
 
+import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -25,8 +26,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import com.theapache64.rebugger.Rebugger
 import androidx.compose.ui.unit.dp
+import com.theapache64.rebugger.Rebugger
 
 const val DURATION = 780
 
@@ -36,6 +37,7 @@ fun InfoCard(
     info: String,
     modifier: Modifier = Modifier,
     enabled: Boolean = false,
+    minSdk: Int? = null,
     additionalInfoContent: @Composable (ColumnScope.() -> Unit) = {}
 ) {
     val isVisible = remember { mutableStateOf(false) }
@@ -61,14 +63,33 @@ fun InfoCard(
             )
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
-        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(text = "$title :", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-            Text(text = info, textAlign = TextAlign.End, modifier = Modifier.weight(1f))
+        if (minSdk != null && Build.VERSION.SDK_INT < minSdk) {
+            Text(
+                text = "\"$title\" Unavailable for API below $minSdk",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        } else {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(text = "$title :", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                Text(text = info, textAlign = TextAlign.End, modifier = Modifier.weight(1f))
+            }
         }
         AnimatedVisibility(
             visible = isVisible.value,
             enter = expandVertically(tween(DURATION, easing = FastOutSlowInEasing)),
-            exit = shrinkVertically(animationSpec = tween(DURATION, easing = FastOutSlowInEasing)) + fadeOut()
+            exit = shrinkVertically(
+                animationSpec = tween(
+                    DURATION,
+                    easing = FastOutSlowInEasing
+                )
+            ) + fadeOut()
         ) {
             additionalInfoContent()
         }
