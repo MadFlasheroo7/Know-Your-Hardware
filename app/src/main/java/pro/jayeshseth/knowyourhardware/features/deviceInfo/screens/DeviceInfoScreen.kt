@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -23,7 +24,7 @@ fun DeviceInfoScreen(modifier: Modifier = Modifier) {
             .verticalScroll(
                 rememberScrollState()
             )
-//            .systemBarsPadding()
+            .systemBarsPadding()
     ) {
         InfoCard(title = "API Version", info = "${Build.VERSION.SDK_INT}")
         InfoCard(title = "Board", info = Build.BOARD)

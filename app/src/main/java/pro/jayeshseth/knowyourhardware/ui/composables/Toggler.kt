@@ -24,15 +24,17 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun Toggler(
-    @DrawableRes icon: Int,
+    icon: Painter,
     title: String,
     checked: Boolean,
     onCheckedChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true
 ) {
+//    val painter = painterResource(id = icon)
+
     Rebugger(
-        composableName = "Painter Toggler",
+        composableName = "painter toggle",
         trackMap = mapOf(
             "icon" to icon,
             "title" to title,
@@ -40,10 +42,9 @@ fun Toggler(
             "onCheckedChanged" to onCheckedChanged,
             "modifier" to modifier,
             "enabled" to enabled,
+//            "painter" to painter,
         ),
     )
-    val painter = painterResource(id = icon)
-
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -56,7 +57,7 @@ fun Toggler(
             onCheckedChange = onCheckedChanged,
             thumbContent = {
                 Icon(
-                    painter = painter,
+                    painter = icon,
                     contentDescription = "",
                     modifier = Modifier.size(SwitchDefaults.IconSize)
                 )

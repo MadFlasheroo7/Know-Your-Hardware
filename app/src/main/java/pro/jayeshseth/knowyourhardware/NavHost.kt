@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import pro.jayeshseth.knowyourhardware.features.gps.broadcastReceiver.GpsManager
 import pro.jayeshseth.knowyourhardware.features.deviceInfo.screens.DeviceInfoScreen
+import pro.jayeshseth.knowyourhardware.features.gps.LocationScreenViewModel
 import pro.jayeshseth.knowyourhardware.features.gps.screens.GPSScreen
 import pro.jayeshseth.knowyourhardware.features.gps.screens.GpsInfoScreen
 import pro.jayeshseth.knowyourhardware.ui.screens.HomeScreen
@@ -22,6 +23,7 @@ const val DEVICE_INFO_SCREEN_ROUTE = "device_info_route"
 
 @Composable
 fun BRNavHost(
+    viewModel: LocationScreenViewModel,
     gpsManager: GpsManager,
     modifier: Modifier = Modifier
 ) {
@@ -55,7 +57,7 @@ fun BRNavHost(
         composable(
             route = LOCATION_SCREEN_ROUTE
         ) {
-            LocationScreen(gpsManager)
+            LocationScreen(viewModel = viewModel)
         }
         composable(
             route = DEVICE_INFO_SCREEN_ROUTE
