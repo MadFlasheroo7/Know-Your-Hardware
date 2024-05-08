@@ -19,6 +19,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import pro.jayeshseth.knowyourhardware.R
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -34,6 +35,7 @@ class ForegroundLocationService : Service() {
         private const val NOTIFICATION_CHANNEL = "location_tracking_channel"
         private const val SERVICE_ID = 1
     }
+
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private lateinit var locationRepository: LocationRepository
@@ -74,7 +76,7 @@ class ForegroundLocationService : Service() {
         val notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL)
             .setContentTitle("Live Location")
             .setContentText("Tracking Location in Foreground")
-            .setSmallIcon(applicationInfo.icon)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setOngoing(true)
         val dateTimeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
         locationRepository.getForegroundLocation()
@@ -110,7 +112,7 @@ class ForegroundLocationService : Service() {
     private fun createNotificationChannel() {
         val notificationChannel = NotificationChannelCompat.Builder(
             NOTIFICATION_CHANNEL,
-            NotificationManagerCompat.IMPORTANCE_HIGH
+            NotificationManagerCompat.IMPORTANCE_NONE
         )
             .setName("Foreground Location Tracking")
             .setDescription("Channel for foreground location tracking")

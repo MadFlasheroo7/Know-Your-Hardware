@@ -23,6 +23,9 @@ import pro.jayeshseth.knowyourhardware.ui.composables.InteractiveButton
 fun HomeScreen(
     navToGpsScreen: () -> Unit,
     navToDeviceInfoScreen: () -> Unit,
+    navToCameraScreen: () -> Unit,
+    navToAboutScreen: () -> Unit,
+
 ) {
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -48,7 +51,9 @@ fun HomeScreen(
                 .navigationBarsPadding()
         ) {
             InteractiveButton(text = "GPS", onClick = navToGpsScreen)
+//            InteractiveButton(text = "Camera", onClick = navToGpsScreen)
             InteractiveButton(text = "Device Info", onClick = navToDeviceInfoScreen)
+            InteractiveButton(text = "About", onClick = navToDeviceInfoScreen)
         }
     }
 }

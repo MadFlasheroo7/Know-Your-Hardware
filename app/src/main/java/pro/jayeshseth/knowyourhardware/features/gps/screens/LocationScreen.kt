@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.LocationManager
+import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -26,10 +27,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,13 +47,12 @@ import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
-import pro.jayeshseth.knowyourhardware.R
+import com.theapache64.rebugger.Rebugger
 import pro.jayeshseth.knowyourhardware.features.gps.ForegroundLocationService
 import pro.jayeshseth.knowyourhardware.features.gps.LocationScreenViewModel
 import pro.jayeshseth.knowyourhardware.features.gps.additionalInfos.LocationDataInfo
 import pro.jayeshseth.knowyourhardware.features.gps.locationListeners.FusedLocationProviderUpdatesListener
 import pro.jayeshseth.knowyourhardware.features.gps.locationListeners.LocationManagerUpdatesListener
-import pro.jayeshseth.knowyourhardware.model.TogglerData
 import pro.jayeshseth.knowyourhardware.ui.composables.AdditionalInfoCard
 import pro.jayeshseth.knowyourhardware.ui.composables.InfoCardMapper
 import pro.jayeshseth.knowyourhardware.ui.composables.LocationInfoCard
@@ -72,18 +74,20 @@ fun LocationScreen(
 ) {
     val context = LocalContext.current
     val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-    val locationRequestGSM =
+    val fusedLocationClient = remember {
+        LocationServices.getFusedLocationProviderClient(context)
+    }
+    val locationRequestGSM = remember {
         LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, viewModel.timeInterval.longValue)
             .build()
-    val dateTimeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+    }
+    val dateTimeFormat = remember { SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()) }
     val useFusedGMSProvider = remember { mutableStateOf(true) }
     val isFusedProviderClientAvailable = remember { mutableStateOf(true) }
     val permissions = remember {
         mutableListOf(
             Manifest.permission.ACCESS_COARSE_LOCATION,
             Manifest.permission.ACCESS_FINE_LOCATION,
-//            Manifest.permission.ACCESS_BACKGROUND_LOCATION
         )
     }
     val foregroundLiveLocation by ForegroundLocationService.liveLocation.collectAsState()
@@ -91,13 +95,15 @@ fun LocationScreen(
         mutableStateOf(ForegroundLocationService.isServiceRunning.value)
     }
 
-
-    val fusedLocationProviderClientAvailability =
+    val fusedLocationProviderClientAvailability = remember {
         GoogleApiAvailability.getInstance().checkApiAvailability(fusedLocationClient)
-    fusedLocationProviderClientAvailability.addOnSuccessListener {
-        isFusedProviderClientAvailable.value = true
-    }.addOnFailureListener {
-        isFusedProviderClientAvailable.value = false
+    }
+    SideEffect {
+        fusedLocationProviderClientAvailability.addOnSuccessListener {
+            isFusedProviderClientAvailable.value = true
+        }.addOnFailureListener {
+            isFusedProviderClientAvailable.value = false
+        }
     }
 
     if (viewModel.trackLiveLocation.value) {
@@ -136,9 +142,12 @@ fun LocationScreen(
         }
     }
 
-    val lastKnownLocationTimestamp =
+    val lastKnownLocationTimestamp = remember {
         dateTimeFormat.format(Date(viewModel.lastKnownLocation.value.time))
-    val liveLocationTimestamp = dateTimeFormat.format(Date(viewModel.liveLocation.value.time))
+    }
+    val liveLocationTimestamp = remember {
+        dateTimeFormat.format(Date(viewModel.liveLocation.value.time))
+    }
 
     val elapsedTimeInMinutes = remember(viewModel.liveLocation.value) {
         when {
@@ -163,104 +172,59 @@ fun LocationScreen(
         }
     }
 
-    val elapsedTimeMillis = when {
-        viewModel.showInMinutes.value -> {
-            "$elapsedTimeInMinutes Min(s)"
-        }
+    val elapsedTimeMillis = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        remember(viewModel.liveLocation.value.elapsedRealtimeMillis) {
+            when {
+                viewModel.showInMinutes.value -> {
+                    "$elapsedTimeInMinutes Min(s)"
+                }
 
-        viewModel.showInSeconds.value -> {
-            "$elapsedTimeInSeconds Sec(s)"
-        }
+                viewModel.showInSeconds.value -> {
+                    "$elapsedTimeInSeconds Sec(s)"
+                }
 
-        else -> {
-            if (isAbove_TIRAMISU) {
-                "${viewModel.liveLocation.value.elapsedRealtimeMillis}"
-            } else {
-                "Unavailable"
+                else -> {
+                    if (isAbove_TIRAMISU) {
+                        "${viewModel.liveLocation.value.elapsedRealtimeMillis}"
+                    } else {
+                        "Unavailable"
+                    }
+                }
+            }
+        }
+    } else {
+        TODO("VERSION.SDK_INT < TIRAMISU")
+    }
+    val elapsedTimeNanos = remember(viewModel.liveLocation.value.elapsedRealtimeNanos) {
+        when {
+            viewModel.showInMinutes.value -> {
+                "$elapsedTimeInMinutes Min(s)"
+            }
+
+            viewModel.showInSeconds.value -> {
+                "$elapsedTimeInSeconds Sec(s)"
+            }
+
+            else -> {
+                if (isAbove_TIRAMISU) {
+                    "${viewModel.liveLocation.value.elapsedRealtimeNanos}"
+                } else {
+                    "Unavailable"
+                }
             }
         }
     }
-    val elapsedTimeNanos = when {
-        viewModel.showInMinutes.value -> {
-            "$elapsedTimeInMinutes Min(s)"
-        }
+    val speed = remember(viewModel.liveLocation.value.speed) {
+        when {
+            viewModel.speedInKms.value -> {
+                "${viewModel.liveLocation.value.speed * 3.6} Kph"
+            }
 
-        viewModel.showInSeconds.value -> {
-            "$elapsedTimeInSeconds Sec(s)"
-        }
-
-        else -> {
-            if (isAbove_TIRAMISU) {
-                "${viewModel.liveLocation.value.elapsedRealtimeNanos}"
-            } else {
-                "Unavailable"
+            else -> {
+                "${viewModel.liveLocation.value.speed} m/s"
             }
         }
     }
-    val speed = when {
-        viewModel.speedInKms.value -> {
-            "${viewModel.liveLocation.value.speed * 3.6} Kph"
-        }
-
-        else -> {
-            "${viewModel.liveLocation.value.speed} m/s"
-        }
-    }
-
-    val togglerList = mutableListOf(
-        TogglerData(
-            title = "Track Live Location",
-            checked = viewModel.trackLiveLocation.value,
-            onCheckedChanged = { viewModel.trackLiveLocation.value = it },
-            icon = R.drawable.round_location_on,
-            enabled = true
-        ),
-        TogglerData(
-            title = "Track Live Location (Foreground Service)",
-            checked = isForegroundServiceRunning,
-            onCheckedChanged = {
-                isForegroundServiceRunning = it
-            },
-            icon = R.drawable.round_location_on,
-            enabled = true
-        ),
-        TogglerData(
-            title = "Track Live Location (Background Service)",
-            checked = false,
-            onCheckedChanged = {},
-            icon = R.drawable.round_location_on,
-            enabled = false
-        ),
-        TogglerData(
-            title = "Elapsed time in seconds",
-            checked = viewModel.showInSeconds.value,
-            onCheckedChanged = {
-                viewModel.showInSeconds.value = it
-                viewModel.showInMinutes.value = false
-            },
-            icon = R.drawable.round_access_time_filled_24,
-            enabled = viewModel.trackLiveLocation.value
-        ),
-        TogglerData(
-            title = "Elapsed time in minutes",
-            checked = viewModel.showInMinutes.value,
-            onCheckedChanged = {
-                viewModel.showInMinutes.value = it
-                viewModel.showInSeconds.value = false
-            },
-            icon = R.drawable.round_access_time_filled_24,
-            enabled = viewModel.trackLiveLocation.value
-        ),
-        TogglerData(
-            title = "Speed in KPH",
-            checked = viewModel.speedInKms.value,
-            onCheckedChanged = {
-                viewModel.speedInKms.value = it
-            },
-            icon = R.drawable.speed,
-            enabled = viewModel.trackLiveLocation.value
-        )
-    )
 
     LaunchedEffect(viewModel.selectedProvider.value) {
         if (useFusedGMSProvider.value) {
@@ -295,17 +259,55 @@ fun LocationScreen(
         }
     }
 
-    val locationDataInfo = LocationDataInfo(
-        isFromGms = useFusedGMSProvider.value && viewModel.trackLiveLocation.value,
-        liveLocation = viewModel.liveLocation.value,
-        lastKnownLocation = viewModel.lastKnownLocation.value,
-        liveLocationTimestamp = liveLocationTimestamp,
-        lastKnownLocationTimestamp = lastKnownLocationTimestamp,
-        elapsedTimeNanos = elapsedTimeNanos,
-        elapsedTimeMillis = elapsedTimeMillis,
-        speed = speed
+    val locationDataInfo = rememberUpdatedState(
+        newValue = LocationDataInfo(
+            isFromGms = useFusedGMSProvider.value && viewModel.trackLiveLocation.value,
+            liveLocation = viewModel.liveLocation.value,
+            lastKnownLocation = viewModel.lastKnownLocation.value,
+            liveLocationTimestamp = liveLocationTimestamp,
+            lastKnownLocationTimestamp = lastKnownLocationTimestamp,
+            elapsedTimeNanos = elapsedTimeNanos,
+            elapsedTimeMillis = elapsedTimeMillis,
+            speed = speed,
+            trackLiveLocation = viewModel.trackLiveLocation.value,
+            onTrackLiveLocationChanged = { viewModel.trackLiveLocation.value = it },
+            isForegroundServiceRunning = isForegroundServiceRunning,
+            onForegroundServiceChanged = { isForegroundServiceRunning = it },
+            showInSeconds = viewModel.showInSeconds.value,
+            onShowInSecondChanged = { viewModel.showInSeconds.value = it },
+            showInMinutes = viewModel.showInMinutes.value,
+            onShowInMinutesChanged = { viewModel.showInMinutes.value = it },
+            speedInKms = viewModel.speedInKms.value,
+            onSpeedInKmsChanged = { viewModel.speedInKms.value = it })
     )
 
+    Rebugger(
+        composableName = "location screen",
+        trackMap = mapOf(
+            "viewModel" to viewModel,
+            "modifier" to modifier,
+            "context" to context,
+            "locationManager" to locationManager,
+            "fusedLocationClient" to fusedLocationClient,
+            "locationRequestGSM" to locationRequestGSM,
+            "dateTimeFormat" to dateTimeFormat,
+            "useFusedGMSProvider" to useFusedGMSProvider,
+            "isFusedProviderClientAvailable" to isFusedProviderClientAvailable,
+            "permissions" to permissions,
+            "foregroundLiveLocation" to foregroundLiveLocation,
+            "isForegroundServiceRunning" to isForegroundServiceRunning,
+            "fusedLocationProviderClientAvailability" to fusedLocationProviderClientAvailability,
+            "lastKnownLocationTimestamp" to lastKnownLocationTimestamp,
+            "liveLocationTimestamp" to liveLocationTimestamp,
+            "elapsedTimeInMinutes" to elapsedTimeInMinutes,
+            "elapsedTimeInSeconds" to elapsedTimeInSeconds,
+            "elapsedTimeMillis" to elapsedTimeMillis,
+            "elapsedTimeNanos" to elapsedTimeNanos,
+            "speed" to speed,
+            "viewModel.selectedProvider.value" to viewModel.selectedProvider.value,
+            "locationDataInfo" to locationDataInfo,
+        ),
+    )
     if (!isLocationPermissionGranted(context)) {
         PermissionScreen(
             context = context,
@@ -328,7 +330,7 @@ fun LocationScreen(
                 .padding(horizontal = 16.dp)
         ) {
             item { Spacer(modifier = Modifier.statusBarsPadding()) }
-            items(togglerList) {
+            items(locationDataInfo.value.togglerData) {
                 Toggler(
                     title = it.title,
                     checked = it.checked,
@@ -370,7 +372,7 @@ fun LocationScreen(
                     }
                 }
             }
-            items(locationDataInfo.locationInfoList) { info ->
+            items(locationDataInfo.value.locationInfoList) { info ->
                 LocationInfoCard(
                     title = info.title,
                     latitude = info.latitude,
@@ -388,7 +390,7 @@ fun LocationScreen(
                     }
                 )
             }
-            items(locationDataInfo.locationDataInfoList) {
+            items(locationDataInfo.value.locationDataInfoList) {
                 InfoCardMapper(it)
             }
             item {
@@ -400,7 +402,7 @@ fun LocationScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
             }
-            items(locationDataInfo.liveLocationCapabilities) {
+            items(locationDataInfo.value.liveLocationCapabilities) {
                 InfoCardMapper(it)
             }
             item { Spacer(modifier = Modifier.navigationBarsPadding()) }

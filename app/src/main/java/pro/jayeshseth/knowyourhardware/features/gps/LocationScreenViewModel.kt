@@ -1,21 +1,11 @@
 package pro.jayeshseth.knowyourhardware.features.gps
 
-import android.content.Context
 import android.location.Location
-import android.util.Log
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 import pro.jayeshseth.knowyourhardware.features.gps.broadcastReceiver.GpsManager
-import pro.jayeshseth.knowyourhardware.utils.isAbove_TIRAMISU
 import java.util.concurrent.TimeUnit
 
 class LocationScreenViewModel(
@@ -35,6 +25,7 @@ class LocationScreenViewModel(
     fun updateLiveLocation(location: Location) {
         liveLocation.value = location
     }
+
     override fun onCleared() {
         super.onCleared()
         trackLiveLocation.value = false

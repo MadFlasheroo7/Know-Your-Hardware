@@ -1,18 +1,18 @@
 package pro.jayeshseth.knowyourhardware
 
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import pro.jayeshseth.knowyourhardware.features.gps.broadcastReceiver.GpsManager
+import com.theapache64.rebugger.Rebugger
 import pro.jayeshseth.knowyourhardware.features.deviceInfo.screens.DeviceInfoScreen
 import pro.jayeshseth.knowyourhardware.features.gps.LocationScreenViewModel
+import pro.jayeshseth.knowyourhardware.features.gps.broadcastReceiver.GpsManager
 import pro.jayeshseth.knowyourhardware.features.gps.screens.GPSScreen
 import pro.jayeshseth.knowyourhardware.features.gps.screens.GpsInfoScreen
-import pro.jayeshseth.knowyourhardware.ui.screens.HomeScreen
 import pro.jayeshseth.knowyourhardware.features.gps.screens.LocationScreen
+import pro.jayeshseth.knowyourhardware.ui.screens.HomeScreen
 
 const val HOME_ROUTE = "home"
 const val GPS_SCREEN_ROUTE = "gps_route"
@@ -28,6 +28,15 @@ fun BRNavHost(
     modifier: Modifier = Modifier
 ) {
     val navController = rememberNavController()
+    Rebugger(
+        composableName = "nav controller",
+        trackMap = mapOf(
+            "viewModel" to viewModel,
+            "gpsManager" to gpsManager,
+            "modifier" to modifier,
+            "navController" to navController,
+        ),
+    )
     NavHost(
         modifier = modifier,
         navController = navController,
@@ -38,7 +47,9 @@ fun BRNavHost(
         ) {
             HomeScreen(
                 navToGpsScreen = { navController.navigate(GPS_SCREEN_ROUTE) },
-                navToDeviceInfoScreen = { navController.navigate(DEVICE_INFO_SCREEN_ROUTE) }
+                navToDeviceInfoScreen = { navController.navigate(DEVICE_INFO_SCREEN_ROUTE) },
+                navToAboutScreen = {},
+                navToCameraScreen = {}
             )
         }
         composable(
@@ -57,6 +68,16 @@ fun BRNavHost(
         composable(
             route = LOCATION_SCREEN_ROUTE
         ) {
+            // TODO: Fix unnecessary recomposition
+            Rebugger(
+                composableName = "nav location",
+                trackMap = mapOf(
+                    "viewModel" to viewModel,
+                    "gpsManager" to gpsManager,
+                    "modifier" to modifier,
+                    "navController" to navController,
+                ),
+            )
             LocationScreen(viewModel = viewModel)
         }
         composable(

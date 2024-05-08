@@ -8,8 +8,10 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
+import pro.jayeshseth.knowyourhardware.R
 import pro.jayeshseth.knowyourhardware.model.InfoCardData
 import pro.jayeshseth.knowyourhardware.model.LocationInfoCardData
+import pro.jayeshseth.knowyourhardware.model.TogglerData
 import pro.jayeshseth.knowyourhardware.utils.additionalInfo
 import pro.jayeshseth.knowyourhardware.utils.formatLocationAge
 import pro.jayeshseth.knowyourhardware.utils.isAbove_O
@@ -17,11 +19,6 @@ import pro.jayeshseth.knowyourhardware.utils.isAbove_Q
 import pro.jayeshseth.knowyourhardware.utils.isAbove_S
 import pro.jayeshseth.knowyourhardware.utils.isAbove_TIRAMISU
 import pro.jayeshseth.knowyourhardware.utils.isAbove_UPSIDE_DOWN_CAKE
-
-
-
-
-
 
 class LocationDataInfo(
     isFromGms: Boolean,
@@ -32,6 +29,17 @@ class LocationDataInfo(
     elapsedTimeMillis: String,
     elapsedTimeNanos: String,
     speed: String,
+    trackLiveLocation: Boolean,
+    onTrackLiveLocationChanged: (Boolean) -> Unit,
+    isForegroundServiceRunning: Boolean,
+    onForegroundServiceChanged: (Boolean) -> Unit,
+    showInSeconds: Boolean,
+    onShowInSecondChanged: (Boolean) -> Unit,
+    showInMinutes: Boolean,
+    onShowInMinutesChanged: (Boolean) -> Unit,
+    speedInKms: Boolean,
+    onSpeedInKmsChanged: (Boolean) -> Unit,
+
 ) {
     private val currentLocationProvider =
         if (isFromGms) "${liveLocation.provider} (GMS)" else "${liveLocation.provider}"
@@ -349,6 +357,46 @@ class LocationDataInfo(
                 title = "Has Speed",
                 info = if (isAbove_O) "${liveLocation.hasSpeedAccuracy()}" else "",
                 minSdk = Build.VERSION_CODES.O
+            )
+        )
+    }
+
+    val togglerData: List<TogglerData> by lazy {
+        mutableListOf(
+            TogglerData(
+                title = "Track Live Location",
+                checked = trackLiveLocation,
+                onCheckedChanged = onTrackLiveLocationChanged,
+                icon = R.drawable.round_location_on,
+                enabled = true
+            ),
+            TogglerData(
+                title = "Track Live Location (Foreground Service)",
+                checked = isForegroundServiceRunning,
+                onCheckedChanged = onForegroundServiceChanged,
+                icon = R.drawable.round_location_on,
+                enabled = true
+            ),
+            TogglerData(
+                title = "Elapsed time in seconds",
+                checked = showInSeconds,
+                onCheckedChanged = onShowInSecondChanged,
+                icon = R.drawable.round_access_time_filled_24,
+                enabled = trackLiveLocation
+            ),
+            TogglerData(
+                title = "Elapsed time in minutes",
+                checked = showInMinutes,
+                onCheckedChanged = onShowInMinutesChanged,
+                icon = R.drawable.round_access_time_filled_24,
+                enabled = trackLiveLocation
+            ),
+            TogglerData(
+                title = "Speed in KPH",
+                checked = speedInKms,
+                onCheckedChanged = onSpeedInKmsChanged,
+                icon = R.drawable.speed,
+                enabled = trackLiveLocation
             )
         )
     }
