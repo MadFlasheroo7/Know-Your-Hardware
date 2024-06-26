@@ -24,7 +24,7 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 import com.theapache64.rebugger.Rebugger
-import pro.jayeshseth.knowyourhardware.ui.composables.InteractiveButton
+import pro.jayeshseth.commoncomponents.InteractiveButton
 import pro.jayeshseth.knowyourhardware.ui.composables.RationaleDialog
 
 

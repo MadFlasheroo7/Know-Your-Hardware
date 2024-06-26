@@ -1,14 +1,12 @@
 package pro.jayeshseth.knowyourhardware.features.gps.screens
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import pro.jayeshseth.knowyourhardware.ui.composables.InteractiveButton
+import pro.jayeshseth.commoncomponents.InteractiveButton
+import pro.jayeshseth.commoncomponents.StatusBarAwareThemedColumn
 
 @Composable
 fun GPSScreen(
@@ -16,7 +14,7 @@ fun GPSScreen(
     navToGpsInfoScreen: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
+    StatusBarAwareThemedColumn(
         modifier = modifier
             .verticalScroll(rememberScrollState())
             .systemBarsPadding()

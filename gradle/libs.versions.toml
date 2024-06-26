@@ -1,6 +1,7 @@
 [versions]
 accompanistPermissions = "0.35.0-alpha"
 agp = "8.3.0-rc02"
+commonmodules = "0.0.2"
 kotlin = "1.9.22"
 coreKtx = "1.12.0"
 junit = "4.13.2"
@@ -13,10 +14,12 @@ lifecycleViewmodelCompose = "2.7.0"
 navigation = "2.7.6"
 playServicesLocation = "21.2.0"
 rebugger = "1.0.0-rc02"
+accompanistSystemUIController = "0.35.1-alpha"
 
 [libraries]
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanistPermissions" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+commonmodules = { module = "pro.jayeshseth.madappmodules:commonModules", version.ref = "commonmodules" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -34,6 +37,7 @@ lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel
 navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 rebugger = { module = "io.github.theapache64:rebugger", version.ref = "rebugger" }
+accompanist-system-ui-controller = {group = "com.google.accompanist", name = "accompanist-systemuicontroller", version.ref = "accompanistSystemUIController"}
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

@@ -2,7 +2,6 @@ package pro.jayeshseth.knowyourhardware.features.deviceInfo.screens
 
 import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -13,11 +12,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import pro.jayeshseth.commoncomponents.StatusBarAwareThemedColumn
 import pro.jayeshseth.knowyourhardware.ui.composables.InfoCard
 
 @Composable
-fun DeviceInfoScreen(modifier: Modifier = Modifier) {
-    Column(
+fun DeviceInfoScreen(
+    modifier: Modifier = Modifier
+) {
+    StatusBarAwareThemedColumn(
         verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = modifier
             .padding(horizontal = 16.dp)

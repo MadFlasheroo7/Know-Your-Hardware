@@ -50,6 +50,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.commonmodules)
     implementation(libs.rebugger)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -63,6 +64,7 @@ dependencies {
     implementation(libs.navigation.compose)
     implementation(libs.play.services.location)
     implementation (libs.accompanist.permissions)
+    implementation(libs.accompanist.system.ui.controller)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
